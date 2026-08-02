@@ -19,6 +19,10 @@ export const rate = mutation({
     comment: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    if (args.score < 1 || args.score > 10) {
+      throw new Error("Score must be between 1 and 10.");
+    }
+
     const existing = await ctx.db
       .query("ratings")
       .withIndex("by_user_and_title", (q) =>
