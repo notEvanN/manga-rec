@@ -25,6 +25,15 @@ function TitleCard({ title, currentUserId, users }) {
     await setStatus({ userId: currentUserId, titleId: title._id, status });
   };
 
+  const statusLabels = {
+    plan_to_read: "Plan to Read",
+    reading: "Reading",
+    completed: "Completed",
+    dropped: "Dropped",
+  };
+
+  const getStatusLabel = (status) => statusLabels[status] ?? status;
+
   return (
     <div className="title-card">
       {title.coverUrl && (
@@ -62,7 +71,7 @@ function TitleCard({ title, currentUserId, users }) {
 
       <h4>Status</h4>
       {statuses?.map((s) => (
-        <p key={s._id}>{getUserName(s.userId)}: {s.status}</p>
+        <p key={s._id}>{getUserName(s.userId)}: {getStatusLabel(s.status)}</p>
       ))}
     </div>
   );

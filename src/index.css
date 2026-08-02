@@ -1,35 +1,49 @@
+:root {
+  --bg: #f5f5f5;
+  --text: #222;
+  --card-bg: white;
+  --card-border: #ddd;
+  --input-border: #999;
+  --button-hover: #eee;
+}
+
+[data-theme="dark"] {
+  --bg: #1a1a1a;
+  --text: #e8e8e8;
+  --card-bg: #2a2a2a;
+  --card-border: #444;
+  --input-border: #666;
+  --button-hover: #3a3a3a;
+}
+
 body {
   font-family: system-ui, sans-serif;
-  background: #f5f5f5;
+  background: var(--bg);
   margin: 0;
   padding: 2rem;
-  color: #222;
+  color: var(--text);
+  transition: background 0.2s, color 0.2s;
 }
 
-h1 {
-  margin-bottom: 0.5rem;
-}
-
-h2 {
-  margin-top: 2rem;
-  margin-bottom: 0.5rem;
-}
+h1, h2, h3, h4 { margin-bottom: 0.5rem; }
+h2 { margin-top: 2rem; }
 
 select, input, button {
   font-size: 1rem;
   padding: 0.4rem 0.6rem;
   margin: 0.2rem 0;
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
 }
 
 button {
   cursor: pointer;
-  border: 1px solid #999;
-  background: white;
-  border-radius: 4px;
 }
 
 button:hover {
-  background: #eee;
+  background: var(--button-hover);
 }
 
 form {
@@ -41,12 +55,12 @@ form {
 }
 
 .title-card {
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: 8px;
   padding: 1rem 1.25rem;
   margin-bottom: 1rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .title-card h4 {
@@ -56,4 +70,22 @@ form {
 
 .status-buttons button {
   margin-right: 0.5rem;
+}
+
+.titles-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 900px) {
+  .titles-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 550px) {
+  .titles-grid {
+    grid-template-columns: 1fr;
+  }
 }
