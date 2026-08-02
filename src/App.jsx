@@ -39,26 +39,32 @@ function App() {
 
   const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
 
+  const addTitleWithMetadata = useMutation(api.titles.addWithMetadata);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const tags = tagsInput.split(",").map((t) => t.trim()).filter((t) => t.length > 0);
 
-    const titleId = await addTitle({ name, description, tags, coverUrl: coverUrl || undefined });
+    try {
+      await addTitleWithMetadata({
+        name,
+        description,
+        tags,
+        coverUrl: coverUrl || undefined,
+        userId: currentUserId || undefined,
+        score: initialScore ? Number(initialScore) : undefined,
+        status: initialStatus || undefined,
+      });
 
-    if (currentUserId && initialScore) {
-      await rate({ userId: currentUserId, titleId, score: Number(initialScore) });
+      setName("");
+      setDescription("");
+      setTagsInput("");
+      setCoverUrl("");
+      setInitialScore("");
+      setInitialStatus("");
+    } catch (err) {
+      alert(err.message);
     }
-
-    if (currentUserId && initialStatus) {
-      await setStatus({ userId: currentUserId, titleId, status: initialStatus });
-    }
-
-    setName("");
-    setDescription("");
-    setTagsInput("");
-    setCoverUrl("");
-    setInitialScore("");
-    setInitialStatus("");
   };
 
   const runSearch = async (query) => {
@@ -172,8 +178,8 @@ function App() {
         </div>
 
         <div>
-          <label>Your rating (optional): </label>
-          <select value={initialScore} onChange={(e) => setInitialScore(e.target.value)}>
+          <label htmlFor="initial-score">Your rating (optional): </label>
+          <select id="initial-score" value={initialScore} onChange={(e) => setInitialScore(e.target.value)}>
             <option value="">-- Skip --</option>
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
               <option key={n} value={n}>{n}</option>
@@ -181,8 +187,8 @@ function App() {
           </select>
         </div>
         <div>
-          <label>Your status (optional): </label>
-          <select value={initialStatus} onChange={(e) => setInitialStatus(e.target.value)}>
+          <label htmlFor="initial-status">Your status (optional): </label>
+          <select id="initial-status" value={initialStatus} onChange={(e) => setInitialStatus(e.target.value)}>
             <option value="">-- Skip --</option>
             <option value="plan_to_read">Plan to Read</option>
             <option value="reading">Reading</option>
