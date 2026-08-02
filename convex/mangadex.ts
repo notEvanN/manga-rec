@@ -1,0 +1,33 @@
+import { action } from "./_generated/server";
+import { v } from "convex/values";
+
+export const search = action({
+  args: { query: v.string() },
+  handler: async (ctx, { query }) => {
+    const res = await fetch(
+      `https://api.mangadex.org/manga?title=${encodeURIComponent(query)}&limit=5&includes[]=cover_art`
+    );
+
+    if (!res.ok) {
+      throw new Error(`MangaDex returned ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    if (!Array.isArray(data?.data)) {
+      throw new Error("Unexpected response shape");
+    }
+
+    return data.data.map((manga: any) => {
+      const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0];
+      const description = manga.attributes.description.en || "";
+      const coverRel = manga.relationships.find((r: any) => r.type === "cover_art");
+      const coverUrl = coverRel
+        ? `https://uploads.mangadex.org/covers/${manga.id}/${coverRel.attributes.fileName}.256.jpg`
+        : "";
+      const tags = manga.attributes.tags.map((t: any) => t.attributes.name.en).filter(Boolean);
+
+      return { id: manga.id, name: title, description, coverUrl, tags };
+    });
+  },
+});
