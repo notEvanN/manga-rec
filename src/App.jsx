@@ -101,10 +101,21 @@ function App() {
       />
       {searchLoading && <p>Searching...</p>}
       {searchResults.map((result) => (
-        <div
+        <button
           key={result.id}
           onClick={() => selectSearchResult(result)}
-          style={{ cursor: "pointer", padding: "0.3rem", borderBottom: "1px solid #ddd" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            width: "100%",
+            textAlign: "left",
+            background: "none",
+            border: "none",
+            borderBottom: "1px solid #ddd",
+            padding: "0.3rem",
+            cursor: "pointer",
+            font: "inherit",
+          }}
         >
           {result.coverUrl && (
             <img
@@ -115,7 +126,7 @@ function App() {
             />
           )}
           {result.name}
-        </div>
+        </button>
       ))}
 
       <h2>Add a Title</h2>
