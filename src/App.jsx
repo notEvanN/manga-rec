@@ -14,6 +14,9 @@ function App() {
   const [description, setDescription] = useState("");
   const [tagsInput, setTagsInput] = useState("");
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const tags = tagsInput.split(",").map((t) => t.trim()).filter((t) => t.length > 0);
@@ -21,6 +24,45 @@ function App() {
     setName("");
     setDescription("");
     setTagsInput("");
+  };
+
+  const handleSearch = async (query) => {
+    setSearchQuery(query);
+
+    if (query.length < 3) {
+      setSearchResults([]);
+      return;
+    }
+
+    const res = await fetch(
+      `https://api.mangadex.org/manga?title=${encodeURIComponent(query)}&limit=5&includes[]=cover_art`
+    );
+    const data = await res.json();
+
+    const results = data.data.map((manga) => {
+      const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0];
+      const description = manga.attributes.description.en || "";
+      const coverRel = manga.relationships.find((r) => r.type === "cover_art");
+      const coverUrl = coverRel
+        ? `https://uploads.mangadex.org/covers/${manga.id}/${coverRel.attributes.fileName}.256.jpg`
+        : "";
+
+      const tags = manga.attributes.tags
+        .map((t) => t.attributes.name.en)
+        .filter(Boolean);
+
+      return { name: title, description, coverUrl, tags };
+    });
+
+    setSearchResults(results);
+  };
+
+  const selectSearchResult = (result) => {
+    setName(result.name);
+    setDescription(result.description);
+    setTagsInput(result.tags.join(", "));
+    setSearchResults([]);
+    setSearchQuery("");
   };
 
   return (
@@ -41,6 +83,19 @@ function App() {
       </select>
       {currentUserId && <p>Logged in as: {users?.find(u => u._id === currentUserId)?.name}</p>}
 
+      <h2>Search MangaDex</h2>
+      <input
+        placeholder="Search for a title..."
+        value={searchQuery}
+        onChange={(e) => handleSearch(e.target.value)}
+      />
+      {searchResults.map((result, i) => (
+        <div key={i} onClick={() => selectSearchResult(result)} style={{ cursor: "pointer", padding: "0.3rem", borderBottom: "1px solid #ddd" }}>
+          {result.coverUrl && <img src={result.coverUrl} alt="" style={{ height: "40px", verticalAlign: "middle", marginRight: "0.5rem" }} />}
+          {result.name}
+        </div>
+      ))}
+
       <h2>Add a Title</h2>
       <form onSubmit={handleSubmit}>
         <div>
@@ -58,13 +113,6 @@ function App() {
       <h2>Titles</h2>
       {titles?.map((title) => (
         <TitleCard key={title._id} title={title} currentUserId={currentUserId} users={users} />
-      ))}
-      {titles?.map((title) => (
-        <div key={title._id} style={{ marginBottom: "1rem" }}>
-          <strong>{title.name}</strong>
-          <p>{title.description}</p>
-          <p>Tags: {title.tags.join(", ")}</p>
-        </div>
       ))}
     </div>
   );
