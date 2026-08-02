@@ -5,28 +5,8 @@ import TitleCard from "./TitleCard";
 
 function App() {
   const users = useQuery(api.users.list);
-  const titles = useQuery(api.titles.list);
-  const addTitle = useMutation(api.titles.add);
+  const addTitleWithMetadata = useMutation(api.titles.addWithMetadata);
   const searchMangaDex = useAction(api.mangadex.search);
-  const rate = useMutation(api.ratings.rate);
-  const setStatus = useMutation(api.readStatus.setStatus);
-
-  const [currentUserId, setCurrentUserId] = useState("");
-
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [tagsInput, setTagsInput] = useState("");
-  const [coverUrl, setCoverUrl] = useState("");
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-
-  const [initialScore, setInitialScore] = useState("");
-  const [initialStatus, setInitialStatus] = useState("");
-
-  const debounceTimer = useRef(null);
-  const latestQueryId = useRef(0);
 
   const [theme, setTheme] = useState(
     () => localStorage.getItem("theme") || "light"
@@ -39,7 +19,37 @@ function App() {
 
   const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
 
-  const addTitleWithMetadata = useMutation(api.titles.addWithMetadata);
+  const [sortMode, setSortMode] = useState("newest");
+  const titlesNewest = useQuery(api.titles.list, sortMode !== "rating" ? {} : "skip");
+  const titlesByRating = useQuery(api.titles.listSortedByRating, sortMode === "rating" ? {} : "skip");
+
+  const rawTitles = sortMode === "rating" ? titlesByRating : titlesNewest;
+
+  const titles =
+    sortMode === "mostRated" && rawTitles
+      ? [...rawTitles].sort((a, b) => {
+          if (b.ratingCount !== a.ratingCount) {
+            return b.ratingCount - a.ratingCount;
+          }
+          return (b.avgRating ?? -1) - (a.avgRating ?? -1);
+        })
+      : rawTitles;
+
+  const [currentUserId, setCurrentUserId] = useState("");
+
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [tagsInput, setTagsInput] = useState("");
+  const [coverUrl, setCoverUrl] = useState("");
+  const [initialScore, setInitialScore] = useState("");
+  const [initialStatus, setInitialStatus] = useState("");
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
+  const debounceTimer = useRef(null);
+  const latestQueryId = useRef(0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -120,6 +130,7 @@ function App() {
       <button onClick={toggleTheme}>
         {theme === "light" ? "🌙 Dark Mode" : "☀️ Light Mode"}
       </button>
+
       <h2>Who are you?</h2>
       <select value={currentUserId} onChange={(e) => setCurrentUserId(e.target.value)}>
         <option value="">-- Select your name --</option>
@@ -176,7 +187,6 @@ function App() {
         <div>
           <input placeholder="Tags (comma separated)" value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} />
         </div>
-
         <div>
           <label htmlFor="initial-score">Your rating (optional): </label>
           <select id="initial-score" value={initialScore} onChange={(e) => setInitialScore(e.target.value)}>
@@ -196,11 +206,18 @@ function App() {
             <option value="dropped">Dropped</option>
           </select>
         </div>
-
         <button type="submit">Add Title</button>
       </form>
 
       <h2>Titles</h2>
+      <div style={{ margin: "1rem 0" }}>
+        <label htmlFor="sort-mode">Sort by: </label>
+        <select id="sort-mode" value={sortMode} onChange={(e) => setSortMode(e.target.value)}>
+          <option value="newest">Newest</option>
+          <option value="rating">Highest Rated</option>
+          <option value="mostRated">Most Rated</option>
+        </select>
+      </div>
       <div className="titles-grid">
         {titles?.map((title) => (
           <TitleCard key={title._id} title={title} currentUserId={currentUserId} users={users} />

@@ -10,10 +10,19 @@ function TitleCard({ title, currentUserId, users }) {
   const setStatus = useMutation(api.readStatus.setStatus);
 
   const [score, setScore] = useState(5);
+  const [descExpanded, setDescExpanded] = useState(false);
 
   const getUserName = (userId) => {
     return users?.find((u) => u._id === userId)?.name ?? "Unknown";
   };
+
+  const statusLabels = {
+    plan_to_read: "Plan to Read",
+    reading: "Reading",
+    completed: "Completed",
+    dropped: "Dropped",
+  };
+  const getStatusLabel = (status) => statusLabels[status] ?? status;
 
   const handleRate = async () => {
     if (!currentUserId) return alert("Select your name first");
@@ -25,14 +34,7 @@ function TitleCard({ title, currentUserId, users }) {
     await setStatus({ userId: currentUserId, titleId: title._id, status });
   };
 
-  const statusLabels = {
-    plan_to_read: "Plan to Read",
-    reading: "Reading",
-    completed: "Completed",
-    dropped: "Dropped",
-  };
-
-  const getStatusLabel = (status) => statusLabels[status] ?? status;
+  const isLongDescription = title.description && title.description.length > 150;
 
   return (
     <div className="title-card">
@@ -45,7 +47,35 @@ function TitleCard({ title, currentUserId, users }) {
         />
       )}
       <strong>{title.name}</strong>
-      <p>{title.description}</p>
+
+      {title.avgRating != null && (
+        <p style={{ fontWeight: "bold" }}>
+          ⭐ {title.avgRating.toFixed(1)}/10 ({title.ratingCount} rating{title.ratingCount !== 1 ? "s" : ""})
+        </p>
+      )}
+
+      <p>
+        {isLongDescription && !descExpanded
+          ? `${title.description.slice(0, 150)}...`
+          : title.description}
+        {isLongDescription && (
+          <button
+            onClick={() => setDescExpanded((v) => !v)}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#3b82f6",
+              cursor: "pointer",
+              padding: 0,
+              marginLeft: "0.3rem",
+              font: "inherit",
+            }}
+          >
+            {descExpanded ? "See less" : "See more..."}
+          </button>
+        )}
+      </p>
+
       <p>Tags: {title.tags.join(", ")}</p>
 
       <div>

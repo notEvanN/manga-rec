@@ -61,6 +61,15 @@ form {
   padding: 1rem 1.25rem;
   margin-bottom: 1rem;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.title-card img {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 .title-card h4 {
