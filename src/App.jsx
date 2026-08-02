@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../convex/_generated/api";
 import TitleCard from "./TitleCard";
 
@@ -7,6 +7,7 @@ function App() {
   const users = useQuery(api.users.list);
   const titles = useQuery(api.titles.list);
   const addTitle = useMutation(api.titles.add);
+  const searchMangaDex = useAction(api.mangadex.search);
 
   const [currentUserId, setCurrentUserId] = useState("");
 
@@ -37,29 +38,8 @@ function App() {
     setSearchLoading(true);
 
     try {
-      const res = await fetch(
-        `https://api.mangadex.org/manga?title=${encodeURIComponent(query)}&limit=5&includes[]=cover_art`
-      );
+      const results = await searchMangaDex({ query });
 
-      if (!res.ok) throw new Error(`MangaDex returned ${res.status}`);
-
-      const data = await res.json();
-
-      if (!Array.isArray(data?.data)) throw new Error("Unexpected response shape");
-
-      const results = data.data.map((manga) => {
-        const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0];
-        const description = manga.attributes.description.en || "";
-        const coverRel = manga.relationships.find((r) => r.type === "cover_art");
-        const coverUrl = coverRel
-          ? `https://uploads.mangadex.org/covers/${manga.id}/${coverRel.attributes.fileName}.256.jpg`
-          : "";
-        const tags = manga.attributes.tags.map((t) => t.attributes.name.en).filter(Boolean);
-
-        return { id: manga.id, name: title, description, coverUrl, tags };
-      });
-
-      // only apply if this is still the most recent search
       if (queryId === latestQueryId.current) {
         setSearchResults(results);
       }
@@ -121,10 +101,32 @@ function App() {
       />
       {searchLoading && <p>Searching...</p>}
       {searchResults.map((result) => (
-        <div key={result.id} onClick={() => selectSearchResult(result)} style={{ cursor: "pointer", padding: "0.3rem", borderBottom: "1px solid #ddd" }}>
-          {result.coverUrl && <img src={result.coverUrl} alt="" style={{ height: "40px", verticalAlign: "middle", marginRight: "0.5rem" }} />}
+        <button
+          key={result.id}
+          onClick={() => selectSearchResult(result)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            width: "100%",
+            textAlign: "left",
+            background: "none",
+            border: "none",
+            borderBottom: "1px solid #ddd",
+            padding: "0.3rem",
+            cursor: "pointer",
+            font: "inherit",
+          }}
+        >
+          {result.coverUrl && (
+            <img
+              src={result.coverUrl}
+              alt=""
+              referrerPolicy="no-referrer"
+              style={{ height: "40px", verticalAlign: "middle", marginRight: "0.5rem" }}
+            />
+          )}
           {result.name}
-        </div>
+        </button>
       ))}
 
       <h2>Add a Title</h2>

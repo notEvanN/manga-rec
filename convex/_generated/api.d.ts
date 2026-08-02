@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as mangadex from "../mangadex.js";
 import type * as ratings from "../ratings.js";
 import type * as readStatus from "../readStatus.js";
 import type * as titles from "../titles.js";
@@ -20,6 +21,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  mangadex: typeof mangadex;
   ratings: typeof ratings;
   readStatus: typeof readStatus;
   titles: typeof titles;

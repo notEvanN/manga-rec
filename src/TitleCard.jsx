@@ -27,6 +27,14 @@ function TitleCard({ title, currentUserId, users }) {
 
   return (
     <div className="title-card">
+      {title.coverUrl && (
+        <img
+          src={title.coverUrl}
+          alt={title.name}
+          referrerPolicy="no-referrer"
+          style={{ height: "150px", display: "block", marginBottom: "0.5rem" }}
+        />
+      )}
       <strong>{title.name}</strong>
       <p>{title.description}</p>
       <p>Tags: {title.tags.join(", ")}</p>
