@@ -11,6 +11,8 @@ export default defineSchema({
     coverUrl: v.optional(v.string()),
     description: v.optional(v.string()),
     tags: v.array(v.string()),
+    addedBy: v.optional(v.id("users")),
+    slop: v.optional(v.boolean()),
   }),
 
   ratings: defineTable({
