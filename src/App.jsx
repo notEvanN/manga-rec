@@ -39,6 +39,12 @@ function App() {
   const debounceTimer = useRef(null);
   const latestQueryId = useRef(0);
 
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, []);
+
   // modal state
   const [pendingTitle, setPendingTitle] = useState(null);
   const [editedDescription, setEditedDescription] = useState("");
@@ -46,6 +52,21 @@ function App() {
   const [initialScore, setInitialScore] = useState("");
   const [initialStatus, setInitialStatus] = useState("");
   const [isSlop, setIsSlop] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [modalError, setModalError] = useState("");
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    if (!pendingTitle) return;
+
+    modalRef.current?.focus();
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") closeModal();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [pendingTitle]);
 
   const runSearch = async (query) => {
     const queryId = ++latestQueryId.current;
@@ -79,13 +100,21 @@ function App() {
     setInitialScore("");
     setInitialStatus("");
     setIsSlop(false);
+    setModalError("");
     setSearchResults([]);
     setSearchQuery("");
   };
 
-  const closeModal = () => setPendingTitle(null);
+  const closeModal = () => {
+    setPendingTitle(null);
+    setModalError("");
+  };
 
   const confirmAddTitle = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setModalError("");
+
     const tags = editedTagsInput.split(",").map((t) => t.trim()).filter((t) => t.length > 0);
 
     try {
@@ -101,7 +130,9 @@ function App() {
       });
       closeModal();
     } catch (err) {
-      alert(err.message);
+      setModalError(err.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -152,7 +183,15 @@ function App() {
 
       {pendingTitle && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Add ${pendingTitle.name}`}
+            tabIndex={-1}
+            ref={modalRef}
+            onClick={(e) => e.stopPropagation()}
+          >
             {pendingTitle.coverUrl && (
               <img
                 src={pendingTitle.coverUrl}
@@ -188,6 +227,7 @@ function App() {
               <button
                 type="button"
                 onClick={() => setIsSlop((v) => !v)}
+                aria-pressed={isSlop}
                 className={isSlop ? "toggle-active" : ""}
               >
                 {isSlop ? "✓ Slop" : "Slop?"}
@@ -196,7 +236,12 @@ function App() {
 
             <div style={{ marginTop: "0.75rem" }}>
               <label htmlFor="modal-score">Your rating (optional): </label>
-              <select id="modal-score" value={initialScore} onChange={(e) => setInitialScore(e.target.value)}>
+              <select
+                id="modal-score"
+                value={initialScore}
+                onChange={(e) => setInitialScore(e.target.value)}
+                disabled={!currentUserId}
+              >
                 <option value="">-- Skip --</option>
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                   <option key={n} value={n}>{n}</option>
@@ -206,7 +251,12 @@ function App() {
 
             <div>
               <label htmlFor="modal-status">Your status (optional): </label>
-              <select id="modal-status" value={initialStatus} onChange={(e) => setInitialStatus(e.target.value)}>
+              <select
+                id="modal-status"
+                value={initialStatus}
+                onChange={(e) => setInitialStatus(e.target.value)}
+                disabled={!currentUserId}
+              >
                 <option value="">-- Skip --</option>
                 <option value="plan_to_read">Plan to Read</option>
                 <option value="reading">Reading</option>
@@ -215,9 +265,19 @@ function App() {
               </select>
             </div>
 
+            {!currentUserId && (
+              <p style={{ fontSize: "0.8rem", opacity: 0.7 }}>Select your name above to rate or set status.</p>
+            )}
+
+            {modalError && <p style={{ color: "#ef4444" }}>{modalError}</p>}
+
             <div style={{ marginTop: "1rem" }}>
-              <button onClick={confirmAddTitle}>Add Title</button>
-              <button onClick={closeModal} style={{ marginLeft: "0.5rem" }}>Cancel</button>
+              <button onClick={confirmAddTitle} disabled={isSubmitting}>
+                {isSubmitting ? "Adding..." : "Add Title"}
+              </button>
+              <button onClick={closeModal} style={{ marginLeft: "0.5rem" }} disabled={isSubmitting}>
+                Cancel
+              </button>
             </div>
           </div>
         </div>

@@ -175,7 +175,12 @@ form {
 }
 
 .toggle-active {
-  background: #ef4444 !important;
+  background: #b91c1c !important;
   color: white !important;
-  border-color: #ef4444 !important;
+  border-color: #b91c1c !important;
+}
+
+.search-result-row:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
 }
