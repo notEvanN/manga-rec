@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../convex/_generated/api";
 import TitleCard from "./TitleCard";
@@ -8,128 +8,111 @@ function App() {
   const addTitleWithMetadata = useMutation(api.titles.addWithMetadata);
   const searchMangaDex = useAction(api.mangadex.search);
 
-  const [theme, setTheme] = useState(
-    () => localStorage.getItem("theme") || "light"
-  );
-
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
   }, [theme]);
-
   const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
 
   const [sortMode, setSortMode] = useState("newest");
   const titlesNewest = useQuery(api.titles.list, sortMode !== "rating" ? {} : "skip");
   const titlesByRating = useQuery(api.titles.listSortedByRating, sortMode === "rating" ? {} : "skip");
-
   const rawTitles = sortMode === "rating" ? titlesByRating : titlesNewest;
 
-  const titles =
-    sortMode === "mostRated" && rawTitles
-      ? [...rawTitles].sort((a, b) => {
-          if (b.ratingCount !== a.ratingCount) {
-            return b.ratingCount - a.ratingCount;
-          }
-          return (b.avgRating ?? -1) - (a.avgRating ?? -1);
-        })
-      : rawTitles;
+  const titles = useMemo(() => {
+    if (sortMode === "mostRated" && rawTitles) {
+      return [...rawTitles].sort((a, b) => {
+        if (b.ratingCount !== a.ratingCount) return b.ratingCount - a.ratingCount;
+        return (b.avgRating ?? -1) - (a.avgRating ?? -1);
+      });
+    }
+    return rawTitles;
+  }, [rawTitles, sortMode]);
 
   const [currentUserId, setCurrentUserId] = useState("");
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [tagsInput, setTagsInput] = useState("");
-  const [coverUrl, setCoverUrl] = useState("");
-  const [initialScore, setInitialScore] = useState("");
-  const [initialStatus, setInitialStatus] = useState("");
-
+  // search state
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
-
   const debounceTimer = useRef(null);
   const latestQueryId = useRef(0);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const tags = tagsInput.split(",").map((t) => t.trim()).filter((t) => t.length > 0);
-
-    try {
-      await addTitleWithMetadata({
-        name,
-        description,
-        tags,
-        coverUrl: coverUrl || undefined,
-        userId: currentUserId || undefined,
-        score: initialScore ? Number(initialScore) : undefined,
-        status: initialStatus || undefined,
-      });
-
-      setName("");
-      setDescription("");
-      setTagsInput("");
-      setCoverUrl("");
-      setInitialScore("");
-      setInitialStatus("");
-    } catch (err) {
-      alert(err.message);
-    }
-  };
+  // modal state
+  const [pendingTitle, setPendingTitle] = useState(null);
+  const [editedDescription, setEditedDescription] = useState("");
+  const [editedTagsInput, setEditedTagsInput] = useState("");
+  const [initialScore, setInitialScore] = useState("");
+  const [initialStatus, setInitialStatus] = useState("");
+  const [isSlop, setIsSlop] = useState(false);
 
   const runSearch = async (query) => {
     const queryId = ++latestQueryId.current;
     setSearchLoading(true);
-
     try {
       const results = await searchMangaDex({ query });
-
-      if (queryId === latestQueryId.current) {
-        setSearchResults(results);
-      }
+      if (queryId === latestQueryId.current) setSearchResults(results);
     } catch (err) {
       console.error("MangaDex search failed:", err);
-      if (queryId === latestQueryId.current) {
-        setSearchResults([]);
-      }
+      if (queryId === latestQueryId.current) setSearchResults([]);
     } finally {
-      if (queryId === latestQueryId.current) {
-        setSearchLoading(false);
-      }
+      if (queryId === latestQueryId.current) setSearchLoading(false);
     }
   };
 
   const handleSearch = (query) => {
     setSearchQuery(query);
-
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
-
     if (query.length < 3) {
       setSearchResults([]);
       setSearchLoading(false);
       return;
     }
-
-    debounceTimer.current = setTimeout(() => {
-      runSearch(query);
-    }, 400);
+    debounceTimer.current = setTimeout(() => runSearch(query), 400);
   };
 
-  const selectSearchResult = (result) => {
-    setName(result.name);
-    setDescription(result.description);
-    setTagsInput(result.tags.join(", "));
-    setCoverUrl(result.coverUrl);
+  const openConfirmModal = (result) => {
+    setPendingTitle(result);
+    setEditedDescription(result.description);
+    setEditedTagsInput(result.tags.join(", "));
+    setInitialScore("");
+    setInitialStatus("");
+    setIsSlop(false);
     setSearchResults([]);
     setSearchQuery("");
   };
 
+  const closeModal = () => setPendingTitle(null);
+
+  const confirmAddTitle = async () => {
+    const tags = editedTagsInput.split(",").map((t) => t.trim()).filter((t) => t.length > 0);
+
+    try {
+      await addTitleWithMetadata({
+        name: pendingTitle.name,
+        description: editedDescription,
+        tags,
+        coverUrl: pendingTitle.coverUrl || undefined,
+        userId: currentUserId || undefined,
+        score: initialScore ? Number(initialScore) : undefined,
+        status: initialStatus || undefined,
+        slop: isSlop,
+      });
+      closeModal();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   return (
     <div>
-      <h1>Manga Tracker</h1>
-      <button onClick={toggleTheme}>
-        {theme === "light" ? "🌙 Dark Mode" : "☀️ Light Mode"}
-      </button>
+      <div className="app-header">
+        <button className="theme-toggle" onClick={toggleTheme}>
+          {theme === "light" ? "🌙" : "☀️"}
+        </button>
+        <h1>Manga Tracker</h1>
+      </div>
 
       <h2>Who are you?</h2>
       <select value={currentUserId} onChange={(e) => setCurrentUserId(e.target.value)}>
@@ -140,74 +123,105 @@ function App() {
       </select>
       {currentUserId && <p>Logged in as: {users?.find(u => u._id === currentUserId)?.name}</p>}
 
-      <h2>Search MangaDex</h2>
-      <input
-        placeholder="Search for a title..."
-        value={searchQuery}
-        onChange={(e) => handleSearch(e.target.value)}
-      />
-      {searchLoading && <p>Searching...</p>}
-      {searchResults.map((result) => (
-        <button
-          key={result.id}
-          onClick={() => selectSearchResult(result)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            width: "100%",
-            textAlign: "left",
-            background: "none",
-            border: "none",
-            borderBottom: "1px solid #ddd",
-            padding: "0.3rem",
-            cursor: "pointer",
-            font: "inherit",
-          }}
-        >
-          {result.coverUrl && (
-            <img
-              src={result.coverUrl}
-              alt=""
-              referrerPolicy="no-referrer"
-              style={{ height: "40px", verticalAlign: "middle", marginRight: "0.5rem" }}
-            />
-          )}
-          {result.name}
-        </button>
-      ))}
-
-      <h2>Add a Title</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <input placeholder="Title name" value={name} onChange={(e) => setName(e.target.value)} required />
-        </div>
-        <div>
-          <input placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
-        </div>
-        <div>
-          <input placeholder="Tags (comma separated)" value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} />
-        </div>
-        <div>
-          <label htmlFor="initial-score">Your rating (optional): </label>
-          <select id="initial-score" value={initialScore} onChange={(e) => setInitialScore(e.target.value)}>
-            <option value="">-- Skip --</option>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-              <option key={n} value={n}>{n}</option>
+      <div className="search-center">
+        <h2>Search MangaDex to Add a Title</h2>
+        <input
+          className="search-input"
+          placeholder="Search for a title..."
+          value={searchQuery}
+          onChange={(e) => handleSearch(e.target.value)}
+        />
+        {searchLoading && <p>Searching...</p>}
+        {searchResults.length > 0 && (
+          <div className="search-results-scroll">
+            {searchResults.map((result) => (
+              <button
+                key={result.id}
+                onClick={() => openConfirmModal(result)}
+                className="search-result-row"
+              >
+                {result.coverUrl && (
+                  <img src={result.coverUrl} alt="" referrerPolicy="no-referrer" className="search-result-thumb" />
+                )}
+                {result.name}
+              </button>
             ))}
-          </select>
+          </div>
+        )}
+      </div>
+
+      {pendingTitle && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            {pendingTitle.coverUrl && (
+              <img
+                src={pendingTitle.coverUrl}
+                alt=""
+                referrerPolicy="no-referrer"
+                style={{ height: "150px", display: "block", marginBottom: "0.5rem" }}
+              />
+            )}
+            <h3>{pendingTitle.name}</h3>
+
+            <div>
+              <label htmlFor="modal-description">Description:</label>
+              <textarea
+                id="modal-description"
+                value={editedDescription}
+                onChange={(e) => setEditedDescription(e.target.value)}
+                rows={4}
+                style={{ width: "100%" }}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="modal-tags">Tags (comma separated):</label>
+              <input
+                id="modal-tags"
+                value={editedTagsInput}
+                onChange={(e) => setEditedTagsInput(e.target.value)}
+                style={{ width: "100%" }}
+              />
+            </div>
+
+            <div className="status-buttons" style={{ marginTop: "0.5rem" }}>
+              <button
+                type="button"
+                onClick={() => setIsSlop((v) => !v)}
+                className={isSlop ? "toggle-active" : ""}
+              >
+                {isSlop ? "✓ Slop" : "Slop?"}
+              </button>
+            </div>
+
+            <div style={{ marginTop: "0.75rem" }}>
+              <label htmlFor="modal-score">Your rating (optional): </label>
+              <select id="modal-score" value={initialScore} onChange={(e) => setInitialScore(e.target.value)}>
+                <option value="">-- Skip --</option>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="modal-status">Your status (optional): </label>
+              <select id="modal-status" value={initialStatus} onChange={(e) => setInitialStatus(e.target.value)}>
+                <option value="">-- Skip --</option>
+                <option value="plan_to_read">Plan to Read</option>
+                <option value="reading">Reading</option>
+                <option value="completed">Completed</option>
+                <option value="dropped">Dropped</option>
+              </select>
+            </div>
+
+            <div style={{ marginTop: "1rem" }}>
+              <button onClick={confirmAddTitle}>Add Title</button>
+              <button onClick={closeModal} style={{ marginLeft: "0.5rem" }}>Cancel</button>
+            </div>
+          </div>
         </div>
-        <div>
-          <label htmlFor="initial-status">Your status (optional): </label>
-          <select id="initial-status" value={initialStatus} onChange={(e) => setInitialStatus(e.target.value)}>
-            <option value="">-- Skip --</option>
-            <option value="plan_to_read">Plan to Read</option>
-            <option value="reading">Reading</option>
-            <option value="completed">Completed</option>
-            <option value="dropped">Dropped</option>
-          </select>
-        </div>
-        <button type="submit">Add Title</button>
-      </form>
+      )}
 
       <h2>Titles</h2>
       <div style={{ margin: "1rem 0" }}>

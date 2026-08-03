@@ -10,7 +10,7 @@ export const search = action({
     let res;
     try {
       res = await fetch(
-        `https://api.mangadex.org/manga?title=${encodeURIComponent(query)}&limit=5&includes[]=cover_art`,
+        `https://api.mangadex.org/manga?title=${encodeURIComponent(query)}&limit=20&includes[]=cover_art`,
         { signal: controller.signal }
       );
     } finally {

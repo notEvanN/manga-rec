@@ -65,28 +65,85 @@ export const addWithMetadata = mutation({
         v.literal("dropped")
       )
     ),
+    slop: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const { userId, score, status, ...titleArgs } = args;
+      const { userId, score, status, slop, ...titleArgs } = args;
 
-    if ((score !== undefined || status !== undefined) && !userId) {
-      throw new Error("Select your name before adding a rating or status.");
+      if ((score !== undefined || status !== undefined) && !userId) {
+        throw new Error("Select your name before adding a rating or status.");
+      }
+      if (score !== undefined && (score < 1 || score > 10)) {
+        throw new Error("Score must be between 1 and 10.");
+      }
+
+      const existing = await ctx.db.query("titles").collect();
+      const isDuplicate = existing.some(
+        (t) => t.name.trim().toLowerCase() === titleArgs.name.trim().toLowerCase()
+      );
+      if (isDuplicate) {
+        throw new Error(`"${titleArgs.name}" already exists in the list.`);
+      }
+
+      const titleId = await ctx.db.insert("titles", { ...titleArgs, addedBy: userId, slop });
+
+      if (userId && score !== undefined) {
+        await ctx.db.insert("ratings", { userId, titleId, score });
+      }
+      if (userId && status !== undefined) {
+        await ctx.db.insert("readStatus", { userId, titleId, status });
+      }
+
+      return titleId;
+    },
+  });
+
+export const deleteDuplicates = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const allTitles = await ctx.db.query("titles").order("asc").collect();
+
+    const seen = new Map<string, string>(); // normalized name -> first titleId
+    const toDelete: string[] = [];
+
+    for (const t of allTitles) {
+      const key = t.name.trim().toLowerCase();
+      if (seen.has(key)) {
+        toDelete.push(t._id);
+      } else {
+        seen.set(key, t._id);
+      }
     }
 
-    if (score !== undefined && (score < 1 || score > 10)) {
-      throw new Error("Score must be between 1 and 10.");
+    let deletedRatings = 0;
+    let deletedStatuses = 0;
+
+    for (const titleId of toDelete) {
+      const ratings = await ctx.db
+        .query("ratings")
+        .withIndex("by_title", (q) => q.eq("titleId", titleId as any))
+        .collect();
+      for (const r of ratings) {
+        await ctx.db.delete(r._id);
+        deletedRatings++;
+      }
+
+      const statuses = await ctx.db
+        .query("readStatus")
+        .withIndex("by_title", (q) => q.eq("titleId", titleId as any))
+        .collect();
+      for (const s of statuses) {
+        await ctx.db.delete(s._id);
+        deletedStatuses++;
+      }
+
+      await ctx.db.delete(titleId as any);
     }
 
-    const titleId = await ctx.db.insert("titles", titleArgs);
-
-    if (userId && score !== undefined) {
-      await ctx.db.insert("ratings", { userId, titleId, score });
-    }
-
-    if (userId && status !== undefined) {
-      await ctx.db.insert("readStatus", { userId, titleId, status });
-    }
-
-    return titleId;
+    return {
+      titlesDeleted: toDelete.length,
+      ratingsDeleted: deletedRatings,
+      statusesDeleted: deletedStatuses,
+    };
   },
 });

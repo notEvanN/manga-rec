@@ -47,7 +47,7 @@ function TitleCard({ title, currentUserId, users }) {
         />
       )}
       <strong>{title.name}</strong>
-
+      {title.addedBy && <p style={{ fontSize: "0.85rem", opacity: 0.7 }}>Added by: {getUserName(title.addedBy)}</p>}
       {title.avgRating != null && (
         <p style={{ fontWeight: "bold" }}>
           ⭐ {title.avgRating.toFixed(1)}/10 ({title.ratingCount} rating{title.ratingCount !== 1 ? "s" : ""})
@@ -77,6 +77,7 @@ function TitleCard({ title, currentUserId, users }) {
       </p>
 
       <p>Tags: {title.tags.join(", ")}</p>
+      {title.slop && <p style={{ color: "#ef4444", fontWeight: "bold" }}>🚩 Slop</p>}
 
       <div>
         <select value={score} onChange={(e) => setScore(e.target.value)}>
