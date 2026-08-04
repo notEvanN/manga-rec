@@ -2,6 +2,8 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../convex/_generated/api";
 import TitleCard from "./TitleCard";
+import TitleDetailModal from "./TitleDetailModal";
+import Modal from "./Modal";
 
 function App() {
   const users = useQuery(api.users.list);
@@ -15,22 +17,42 @@ function App() {
   }, [theme]);
   const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
 
+  const [currentUserId, setCurrentUserId] = useState("");
+
   const [sortMode, setSortMode] = useState("newest");
+  const [statusFilter, setStatusFilter] = useState("");
+
   const titlesNewest = useQuery(api.titles.list, sortMode !== "rating" ? {} : "skip");
   const titlesByRating = useQuery(api.titles.listSortedByRating, sortMode === "rating" ? {} : "skip");
   const rawTitles = sortMode === "rating" ? titlesByRating : titlesNewest;
 
+  const userStatuses = useQuery(
+    api.readStatus.forUser,
+    currentUserId && statusFilter ? { userId: currentUserId } : "skip"
+  );
+
   const titles = useMemo(() => {
-    if (sortMode === "mostRated" && rawTitles) {
-      return [...rawTitles].sort((a, b) => {
+    let result = rawTitles;
+
+    if (sortMode === "mostRated" && result) {
+      result = [...result].sort((a, b) => {
         if (b.ratingCount !== a.ratingCount) return b.ratingCount - a.ratingCount;
         return (b.avgRating ?? -1) - (a.avgRating ?? -1);
       });
     }
-    return rawTitles;
-  }, [rawTitles, sortMode]);
 
-  const [currentUserId, setCurrentUserId] = useState("");
+    if (statusFilter && userStatuses) {
+      const matchingTitleIds = new Set(
+        userStatuses.filter((s) => s.status === statusFilter).map((s) => s.titleId)
+      );
+      result = result?.filter((t) => matchingTitleIds.has(t._id));
+    }
+
+    return result;
+  }, [rawTitles, sortMode, statusFilter, userStatuses]);
+
+  // detail modal
+  const [selectedTitle, setSelectedTitle] = useState(null);
 
   // search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -45,7 +67,7 @@ function App() {
     };
   }, []);
 
-  // modal state
+  // add-title modal state
   const [pendingTitle, setPendingTitle] = useState(null);
   const [editedDescription, setEditedDescription] = useState("");
   const [editedTagsInput, setEditedTagsInput] = useState("");
@@ -54,19 +76,6 @@ function App() {
   const [isSlop, setIsSlop] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalError, setModalError] = useState("");
-  const modalRef = useRef(null);
-
-  useEffect(() => {
-    if (!pendingTitle) return;
-
-    modalRef.current?.focus();
-
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") closeModal();
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [pendingTitle]);
 
   const runSearch = async (query) => {
     const queryId = ++latestQueryId.current;
@@ -182,105 +191,104 @@ function App() {
       </div>
 
       {pendingTitle && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div
-            className="modal"
-            role="dialog"
-            aria-modal="true"
-            aria-label={`Add ${pendingTitle.name}`}
-            tabIndex={-1}
-            ref={modalRef}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {pendingTitle.coverUrl && (
-              <img
-                src={pendingTitle.coverUrl}
-                alt=""
-                referrerPolicy="no-referrer"
-                style={{ height: "150px", display: "block", marginBottom: "0.5rem" }}
-              />
-            )}
-            <h3>{pendingTitle.name}</h3>
+        <Modal onClose={closeModal} ariaLabel={`Add ${pendingTitle.name}`}>
+          {pendingTitle.coverUrl && (
+            <img
+              src={pendingTitle.coverUrl}
+              alt=""
+              referrerPolicy="no-referrer"
+              style={{ height: "150px", display: "block", marginBottom: "0.5rem" }}
+            />
+          )}
+          <h3>{pendingTitle.name}</h3>
 
-            <div>
-              <label htmlFor="modal-description">Description:</label>
-              <textarea
-                id="modal-description"
-                value={editedDescription}
-                onChange={(e) => setEditedDescription(e.target.value)}
-                rows={4}
-                style={{ width: "100%" }}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="modal-tags">Tags (comma separated):</label>
-              <input
-                id="modal-tags"
-                value={editedTagsInput}
-                onChange={(e) => setEditedTagsInput(e.target.value)}
-                style={{ width: "100%" }}
-              />
-            </div>
-
-            <div className="status-buttons" style={{ marginTop: "0.5rem" }}>
-              <button
-                type="button"
-                onClick={() => setIsSlop((v) => !v)}
-                aria-pressed={isSlop}
-                className={isSlop ? "toggle-active" : ""}
-              >
-                {isSlop ? "✓ Slop" : "Slop?"}
-              </button>
-            </div>
-
-            <div style={{ marginTop: "0.75rem" }}>
-              <label htmlFor="modal-score">Your rating (optional): </label>
-              <select
-                id="modal-score"
-                value={initialScore}
-                onChange={(e) => setInitialScore(e.target.value)}
-                disabled={!currentUserId}
-              >
-                <option value="">-- Skip --</option>
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="modal-status">Your status (optional): </label>
-              <select
-                id="modal-status"
-                value={initialStatus}
-                onChange={(e) => setInitialStatus(e.target.value)}
-                disabled={!currentUserId}
-              >
-                <option value="">-- Skip --</option>
-                <option value="plan_to_read">Plan to Read</option>
-                <option value="reading">Reading</option>
-                <option value="completed">Completed</option>
-                <option value="dropped">Dropped</option>
-              </select>
-            </div>
-
-            {!currentUserId && (
-              <p style={{ fontSize: "0.8rem", opacity: 0.7 }}>Select your name above to rate or set status.</p>
-            )}
-
-            {modalError && <p style={{ color: "#ef4444" }}>{modalError}</p>}
-
-            <div style={{ marginTop: "1rem" }}>
-              <button onClick={confirmAddTitle} disabled={isSubmitting}>
-                {isSubmitting ? "Adding..." : "Add Title"}
-              </button>
-              <button onClick={closeModal} style={{ marginLeft: "0.5rem" }} disabled={isSubmitting}>
-                Cancel
-              </button>
-            </div>
+          <div>
+            <label htmlFor="modal-description">Description:</label>
+            <textarea
+              id="modal-description"
+              value={editedDescription}
+              onChange={(e) => setEditedDescription(e.target.value)}
+              rows={4}
+              style={{ width: "100%" }}
+            />
           </div>
-        </div>
+
+          <div>
+            <label htmlFor="modal-tags">Tags (comma separated):</label>
+            <input
+              id="modal-tags"
+              value={editedTagsInput}
+              onChange={(e) => setEditedTagsInput(e.target.value)}
+              style={{ width: "100%" }}
+            />
+          </div>
+
+          <div className="status-buttons" style={{ marginTop: "0.5rem" }}>
+            <button
+              type="button"
+              onClick={() => setIsSlop((v) => !v)}
+              aria-pressed={isSlop}
+              className={isSlop ? "toggle-active" : ""}
+            >
+              {isSlop ? "✓ Slop" : "Slop?"}
+            </button>
+          </div>
+
+          <div style={{ marginTop: "0.75rem" }}>
+            <label htmlFor="modal-score">Your rating (optional): </label>
+            <select
+              id="modal-score"
+              value={initialScore}
+              onChange={(e) => setInitialScore(e.target.value)}
+              disabled={!currentUserId}
+            >
+              <option value="">-- Skip --</option>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="modal-status">Your status (optional): </label>
+            <select
+              id="modal-status"
+              value={initialStatus}
+              onChange={(e) => setInitialStatus(e.target.value)}
+              disabled={!currentUserId}
+            >
+              <option value="">-- Skip --</option>
+              <option value="plan_to_read">Plan to Read</option>
+              <option value="reading">Reading</option>
+              <option value="completed">Completed</option>
+              <option value="dropped">Dropped</option>
+            </select>
+          </div>
+
+          {!currentUserId && (
+            <p style={{ fontSize: "0.8rem", opacity: 0.7 }}>Select your name above to rate or set status.</p>
+          )}
+
+          {modalError && <p style={{ color: "#ef4444" }}>{modalError}</p>}
+
+          <div style={{ marginTop: "1rem" }}>
+            <button onClick={confirmAddTitle} disabled={isSubmitting}>
+              {isSubmitting ? "Adding..." : "Add Title"}
+            </button>
+            <button onClick={closeModal} style={{ marginLeft: "0.5rem" }} disabled={isSubmitting}>
+              Cancel
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {selectedTitle && (
+        <TitleDetailModal
+          title={selectedTitle}
+          currentUserId={currentUserId}
+          users={users}
+          onClose={() => setSelectedTitle(null)}
+        />
       )}
 
       <h2>Titles</h2>
@@ -291,10 +299,31 @@ function App() {
           <option value="rating">Highest Rated</option>
           <option value="mostRated">Most Rated</option>
         </select>
+
+        {" "}
+
+        <label htmlFor="status-filter">My status: </label>
+        <select
+          id="status-filter"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          disabled={!currentUserId}
+        >
+          <option value="">-- All --</option>
+          <option value="plan_to_read">Plan to Read</option>
+          <option value="reading">Reading</option>
+          <option value="completed">Completed</option>
+          <option value="dropped">Dropped</option>
+        </select>
+        {!currentUserId && (
+          <span style={{ fontSize: "0.8rem", opacity: 0.7, marginLeft: "0.5rem" }}>
+            (select your name to filter)
+          </span>
+        )}
       </div>
       <div className="titles-grid">
         {titles?.map((title) => (
-          <TitleCard key={title._id} title={title} currentUserId={currentUserId} users={users} />
+          <TitleCard key={title._id} title={title} onOpen={setSelectedTitle} />
         ))}
       </div>
     </div>

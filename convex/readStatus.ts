@@ -37,3 +37,13 @@ export const setStatus = mutation({
     }
   },
 });
+
+export const forUser = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => {
+    return await ctx.db
+      .query("readStatus")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+  },
+});
