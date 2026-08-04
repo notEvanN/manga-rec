@@ -35,5 +35,6 @@ export default defineSchema({
     ),
   })
     .index("by_title", ["titleId"])
+    .index("by_user", ["userId"])
     .index("by_user_and_title", ["userId", "titleId"]),
 });

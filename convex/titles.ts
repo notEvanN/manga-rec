@@ -67,12 +67,13 @@ export const addWithMetadata = mutation({
     ),
     slop: v.optional(v.boolean()),
   },
-  handler: async (ctx, args) => {
+    handler: async (ctx, args) => {
       const { userId, score, status, slop, ...titleArgs } = args;
 
-      if ((score !== undefined || status !== undefined) && !userId) {
-        throw new Error("Select your name before adding a rating or status.");
+      if (!userId) {
+        throw new Error("Select your name before adding a title.");
       }
+
       if (score !== undefined && (score < 1 || score > 10)) {
         throw new Error("Score must be between 1 and 10.");
       }
@@ -87,10 +88,10 @@ export const addWithMetadata = mutation({
 
       const titleId = await ctx.db.insert("titles", { ...titleArgs, addedBy: userId, slop });
 
-      if (userId && score !== undefined) {
+      if (score !== undefined) {
         await ctx.db.insert("ratings", { userId, titleId, score });
       }
-      if (userId && status !== undefined) {
+      if (status !== undefined) {
         await ctx.db.insert("readStatus", { userId, titleId, status });
       }
 
@@ -98,52 +99,3 @@ export const addWithMetadata = mutation({
     },
   });
 
-export const deleteDuplicates = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const allTitles = await ctx.db.query("titles").order("asc").collect();
-
-    const seen = new Map<string, string>(); // normalized name -> first titleId
-    const toDelete: string[] = [];
-
-    for (const t of allTitles) {
-      const key = t.name.trim().toLowerCase();
-      if (seen.has(key)) {
-        toDelete.push(t._id);
-      } else {
-        seen.set(key, t._id);
-      }
-    }
-
-    let deletedRatings = 0;
-    let deletedStatuses = 0;
-
-    for (const titleId of toDelete) {
-      const ratings = await ctx.db
-        .query("ratings")
-        .withIndex("by_title", (q) => q.eq("titleId", titleId as any))
-        .collect();
-      for (const r of ratings) {
-        await ctx.db.delete(r._id);
-        deletedRatings++;
-      }
-
-      const statuses = await ctx.db
-        .query("readStatus")
-        .withIndex("by_title", (q) => q.eq("titleId", titleId as any))
-        .collect();
-      for (const s of statuses) {
-        await ctx.db.delete(s._id);
-        deletedStatuses++;
-      }
-
-      await ctx.db.delete(titleId as any);
-    }
-
-    return {
-      titlesDeleted: toDelete.length,
-      ratingsDeleted: deletedRatings,
-      statusesDeleted: deletedStatuses,
-    };
-  },
-});
