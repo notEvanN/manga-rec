@@ -115,6 +115,7 @@ function App() {
   };
 
   const closeModal = () => {
+    if (isSubmitting) return;
     setPendingTitle(null);
     setModalError("");
   };
@@ -266,13 +267,13 @@ function App() {
           </div>
 
           {!currentUserId && (
-            <p style={{ fontSize: "0.8rem", opacity: 0.7 }}>Select your name above to rate or set status.</p>
+            <p style={{ fontSize: "0.8rem", opacity: 0.7 }}>Select your name above to continue.</p>
           )}
 
           {modalError && <p style={{ color: "#ef4444" }}>{modalError}</p>}
 
           <div style={{ marginTop: "1rem" }}>
-            <button onClick={confirmAddTitle} disabled={isSubmitting}>
+            <button onClick={confirmAddTitle} disabled={isSubmitting || !currentUserId}>
               {isSubmitting ? "Adding..." : "Add Title"}
             </button>
             <button onClick={closeModal} style={{ marginLeft: "0.5rem" }} disabled={isSubmitting}>

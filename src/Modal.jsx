@@ -2,15 +2,21 @@ import { useEffect, useRef } from "react";
 
 function Modal({ onClose, ariaLabel, children }) {
   const modalRef = useRef(null);
+  const previouslyFocused = useRef(null);
 
   useEffect(() => {
+    previouslyFocused.current = document.activeElement;
     modalRef.current?.focus();
 
     const handleKeyDown = (e) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      previouslyFocused.current?.focus?.();
+    };
   }, [onClose]);
 
   return (

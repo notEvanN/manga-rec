@@ -67,12 +67,13 @@ export const addWithMetadata = mutation({
     ),
     slop: v.optional(v.boolean()),
   },
-  handler: async (ctx, args) => {
+    handler: async (ctx, args) => {
       const { userId, score, status, slop, ...titleArgs } = args;
 
-      if ((score !== undefined || status !== undefined) && !userId) {
-        throw new Error("Select your name before adding a rating or status.");
+      if (!userId) {
+        throw new Error("Select your name before adding a title.");
       }
+
       if (score !== undefined && (score < 1 || score > 10)) {
         throw new Error("Score must be between 1 and 10.");
       }
@@ -87,10 +88,10 @@ export const addWithMetadata = mutation({
 
       const titleId = await ctx.db.insert("titles", { ...titleArgs, addedBy: userId, slop });
 
-      if (userId && score !== undefined) {
+      if (score !== undefined) {
         await ctx.db.insert("ratings", { userId, titleId, score });
       }
-      if (userId && status !== undefined) {
+      if (status !== undefined) {
         await ctx.db.insert("readStatus", { userId, titleId, status });
       }
 

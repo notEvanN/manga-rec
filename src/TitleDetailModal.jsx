@@ -18,18 +18,29 @@ function TitleDetailModal({ title, currentUserId, users, onClose }) {
   const setStatus = useMutation(api.readStatus.setStatus);
 
   const [score, setScore] = useState(5);
+  const [actionError, setActionError] = useState("");
 
   const getUserName = (userId) => users?.find((u) => u._id === userId)?.name ?? "Unknown";
   const getStatusLabel = (status) => statusLabels[status] ?? status;
 
   const handleRate = async () => {
     if (!currentUserId) return alert("Select your name first");
-    await rate({ userId: currentUserId, titleId: title._id, score: Number(score) });
+    setActionError("");
+    try {
+      await rate({ userId: currentUserId, titleId: title._id, score: Number(score) });
+    } catch (err) {
+      setActionError(err.message);
+    }
   };
 
   const handleStatus = async (status) => {
     if (!currentUserId) return alert("Select your name first");
-    await setStatus({ userId: currentUserId, titleId: title._id, status });
+    setActionError("");
+    try {
+      await setStatus({ userId: currentUserId, titleId: title._id, status });
+    } catch (err) {
+      setActionError(err.message);
+    }
   };
 
   return (
@@ -70,6 +81,8 @@ function TitleDetailModal({ title, currentUserId, users, onClose }) {
         <button onClick={() => handleStatus("completed")}>Completed</button>
         <button onClick={() => handleStatus("dropped")}>Dropped</button>
       </div>
+
+      {actionError && <p style={{ color: "#ef4444" }}>{actionError}</p>}
 
       <h4>Ratings</h4>
       {ratings?.map((r) => (

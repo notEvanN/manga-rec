@@ -200,6 +200,9 @@ form {
   border-radius: 6px;
   margin-bottom: 0.5rem;
 }
+.title-card img.title-card-cover {
+  height: 180px;
+}
 
 .title-card-teaser {
   font-size: 0.9rem;
@@ -209,4 +212,9 @@ form {
 .title-card-tags {
   font-size: 0.8rem;
   opacity: 0.7;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
