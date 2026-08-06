@@ -17,10 +17,9 @@
 
 Nothing here is assigned — pick whatever interests you and open a PR.
 
-- **Better UI/styling** — current design is minimal, room to make it look nicer (card layouts, dark mode, etc.)
-- **Search/filter** — search titles by name, filter by tag, sort by average rating
+- **Better UI/styling** — current design is minimal, room to make it look nicer (card layouts, etc.)
+- **Search** — search titles by name
 - **Cover images** — support image uploads instead of just pasting a URL
-- **Average rating display** — show an aggregate score per title, not just individual ratings
 - **Comments/reviews** — expand ratings beyond just a number
 - **Mobile responsiveness** — current layout isn't tested on small screens
 - **Auth** — replace the dropdown "who are you" selector with real login (Clerk or similar), if the group ever wants privacy/security beyond the honor system
