@@ -17,7 +17,20 @@ function App() {
   }, [theme]);
   const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
 
-  const [currentUserId, setCurrentUserId] = useState("");
+  const [currentUserId, setCurrentUserId] = useState(
+    () => localStorage.getItem("currentUserId") || ""
+  );
+
+  useEffect(() => {
+    if (currentUserId) {
+      localStorage.setItem("currentUserId", currentUserId);
+    } else {
+      localStorage.removeItem("currentUserId");
+    }
+  }, [currentUserId]);
+
+  const effectiveUserId =
+    users && users.some((u) => u._id === currentUserId) ? currentUserId : "";
 
   const [sortMode, setSortMode] = useState("newest");
   const [statusFilter, setStatusFilter] = useState("");
@@ -28,7 +41,7 @@ function App() {
 
   const userStatuses = useQuery(
     api.readStatus.forUser,
-    currentUserId && statusFilter ? { userId: currentUserId } : "skip"
+    effectiveUserId && statusFilter ? { userId: effectiveUserId } : "skip"
   );
 
   const titles = useMemo(() => {
@@ -121,7 +134,7 @@ function App() {
   };
 
   const confirmAddTitle = async () => {
-    if (isSubmitting) return;
+    if (isSubmitting || !effectiveUserId) return;
     setIsSubmitting(true);
     setModalError("");
 
@@ -133,7 +146,7 @@ function App() {
         description: editedDescription,
         tags,
         coverUrl: pendingTitle.coverUrl || undefined,
-        userId: currentUserId || undefined,
+        userId: effectiveUserId || undefined,
         score: initialScore ? Number(initialScore) : undefined,
         status: initialStatus || undefined,
         slop: isSlop,
@@ -162,7 +175,9 @@ function App() {
           <option key={user._id} value={user._id}>{user.name}</option>
         ))}
       </select>
-      {currentUserId && <p>Logged in as: {users?.find(u => u._id === currentUserId)?.name}</p>}
+      {effectiveUserId && (
+        <p>Logged in as: {users?.find(u => u._id === effectiveUserId)?.name}</p>
+      )}
 
       <div className="search-center">
         <h2>Search MangaDex to Add a Title</h2>
@@ -241,7 +256,7 @@ function App() {
               id="modal-score"
               value={initialScore}
               onChange={(e) => setInitialScore(e.target.value)}
-              disabled={!currentUserId}
+              disabled={!effectiveUserId}
             >
               <option value="">-- Skip --</option>
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
@@ -256,7 +271,7 @@ function App() {
               id="modal-status"
               value={initialStatus}
               onChange={(e) => setInitialStatus(e.target.value)}
-              disabled={!currentUserId}
+              disabled={!effectiveUserId}
             >
               <option value="">-- Skip --</option>
               <option value="plan_to_read">Plan to Read</option>
@@ -266,14 +281,14 @@ function App() {
             </select>
           </div>
 
-          {!currentUserId && (
+          {!effectiveUserId && (
             <p style={{ fontSize: "0.8rem", opacity: 0.7 }}>Select your name above to continue.</p>
           )}
 
           {modalError && <p style={{ color: "#ef4444" }}>{modalError}</p>}
 
           <div style={{ marginTop: "1rem" }}>
-            <button onClick={confirmAddTitle} disabled={isSubmitting || !currentUserId}>
+            <button onClick={confirmAddTitle} disabled={isSubmitting || !effectiveUserId}>
               {isSubmitting ? "Adding..." : "Add Title"}
             </button>
             <button onClick={closeModal} style={{ marginLeft: "0.5rem" }} disabled={isSubmitting}>
@@ -286,7 +301,7 @@ function App() {
       {selectedTitle && (
         <TitleDetailModal
           title={selectedTitle}
-          currentUserId={currentUserId}
+          currentUserId={effectiveUserId}
           users={users}
           onClose={() => setSelectedTitle(null)}
         />
@@ -308,7 +323,7 @@ function App() {
           id="status-filter"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          disabled={!currentUserId}
+          disabled={!effectiveUserId}
         >
           <option value="">-- All --</option>
           <option value="plan_to_read">Plan to Read</option>
@@ -316,7 +331,7 @@ function App() {
           <option value="completed">Completed</option>
           <option value="dropped">Dropped</option>
         </select>
-        {!currentUserId && (
+        {!effectiveUserId && (
           <span style={{ fontSize: "0.8rem", opacity: 0.7, marginLeft: "0.5rem" }}>
             (select your name to filter)
           </span>
