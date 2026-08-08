@@ -17,7 +17,23 @@ function App() {
   }, [theme]);
   const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
 
-  const [currentUserId, setCurrentUserId] = useState("");
+  const [currentUserId, setCurrentUserId] = useState(
+    () => localStorage.getItem("currentUserId") || ""
+  );
+
+  useEffect(() => {
+    if (currentUserId) {
+      localStorage.setItem("currentUserId", currentUserId);
+    } else {
+      localStorage.removeItem("currentUserId");
+    }
+  }, [currentUserId]);
+
+  useEffect(() => {
+    if (users && currentUserId && !users.some((u) => u._id === currentUserId)) {
+      setCurrentUserId("");
+    }
+  }, [users, currentUserId]);
 
   const [sortMode, setSortMode] = useState("newest");
   const [statusFilter, setStatusFilter] = useState("");
