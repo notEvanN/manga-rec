@@ -55,6 +55,7 @@ export const addWithMetadata = mutation({
     coverUrl: v.optional(v.string()),
     description: v.optional(v.string()),
     tags: v.array(v.string()),
+    mangaDexId: v.optional(v.string()),
     userId: v.optional(v.id("users")),
     score: v.optional(v.number()),
     status: v.optional(

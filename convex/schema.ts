@@ -13,6 +13,7 @@ export default defineSchema({
     tags: v.array(v.string()),
     addedBy: v.optional(v.id("users")),
     slop: v.optional(v.boolean()),
+    mangaDexId: v.optional(v.string()),
   }),
 
   ratings: defineTable({
