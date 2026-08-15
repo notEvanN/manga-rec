@@ -68,7 +68,7 @@ export const latestChapter = action({
       return null;
     }
 
-    const chapter = data.data[0].attributes.chapter;
+    const chapter = data.data[0]?.attributes?.chapter;
     return chapter || null;
   },
 });
