@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../convex/_generated/api";
 import Modal from "./Modal";
 
@@ -16,9 +16,23 @@ function TitleDetailModal({ title, currentUserId, users, onClose }) {
 
   const rate = useMutation(api.ratings.rate);
   const setStatus = useMutation(api.readStatus.setStatus);
+  const getLatestChapter = useAction(api.mangadex.latestChapter);
 
   const [score, setScore] = useState(5);
   const [actionError, setActionError] = useState("");
+  const [latestChapter, setLatestChapter] = useState(undefined);
+
+  useEffect(() => {
+    if (!title.mangaDexId) {
+      setLatestChapter(null);
+      return;
+    }
+    let cancelled = false;
+    getLatestChapter({ mangaDexId: title.mangaDexId })
+      .then((ch) => { if (!cancelled) setLatestChapter(ch); })
+      .catch(() => { if (!cancelled) setLatestChapter(null); });
+    return () => { cancelled = true; };
+  }, [title.mangaDexId, getLatestChapter]);
 
   const getUserName = (userId) => users?.find((u) => u._id === userId)?.name ?? "Unknown";
   const getStatusLabel = (status) => statusLabels[status] ?? status;
@@ -54,6 +68,13 @@ function TitleDetailModal({ title, currentUserId, users, onClose }) {
         />
       )}
       <h3>{title.name}</h3>
+
+      {latestChapter === undefined && title.mangaDexId && (
+        <p style={{ fontSize: "0.85rem", opacity: 0.7 }}>Loading latest chapter...</p>
+      )}
+      {latestChapter && (
+        <p style={{ fontSize: "0.9rem" }}>Latest (EN): Chapter {latestChapter}</p>
+      )}
 
       {title.avgRating != null && (
         <p style={{ fontWeight: "bold" }}>

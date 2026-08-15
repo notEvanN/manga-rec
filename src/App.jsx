@@ -146,6 +146,7 @@ function App() {
         description: editedDescription,
         tags,
         coverUrl: pendingTitle.coverUrl || undefined,
+        mangaDexId: pendingTitle.id,
         userId: effectiveUserId || undefined,
         score: initialScore ? Number(initialScore) : undefined,
         status: initialStatus || undefined,

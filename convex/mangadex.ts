@@ -41,3 +41,34 @@ export const search = action({
     });
   },
 });
+
+export const latestChapter = action({
+  args: { mangaDexId: v.string() },
+  handler: async (ctx, { mangaDexId }) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    let res;
+    try {
+      res = await fetch(
+        `https://api.mangadex.org/manga/${mangaDexId}/feed?translatedLanguage[]=en&order[chapter]=desc&limit=1&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica`,
+        { signal: controller.signal }
+      );
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
+    if (!res.ok) {
+      throw new Error(`MangaDex returned ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    if (!Array.isArray(data?.data) || data.data.length === 0) {
+      return null;
+    }
+
+    const chapter = data.data[0]?.attributes?.chapter;
+    return chapter || null;
+  },
+});
