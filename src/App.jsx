@@ -4,9 +4,13 @@ import { api } from "../convex/_generated/api";
 import TitleCard from "./TitleCard";
 import TitleDetailModal from "./TitleDetailModal";
 import Modal from "./Modal";
+import { useAuth, SignInButton, UserButton } from "@clerk/clerk-react";
 
 function App() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const me = useQuery(api.users.me);  
   const users = useQuery(api.users.list);
+  const ensureUser = useMutation(api.users.ensure);
   const addTitleWithMetadata = useMutation(api.titles.addWithMetadata);
   const searchMangaDex = useAction(api.mangadex.search);
 
@@ -17,20 +21,14 @@ function App() {
   }, [theme]);
   const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
 
-  const [currentUserId, setCurrentUserId] = useState(
-    () => localStorage.getItem("currentUserId") || ""
-  );
-
+  //Ensure Convex user record exists
   useEffect(() => {
-    if (currentUserId) {
-      localStorage.setItem("currentUserId", currentUserId);
-    } else {
-      localStorage.removeItem("currentUserId");
-    }
-  }, [currentUserId]);
+  if (isSignedIn) {
+    ensureUser();
+  }
+}, [isSignedIn, ensureUser]);
 
-  const effectiveUserId =
-    users && users.some((u) => u._id === currentUserId) ? currentUserId : "";
+  const effectiveUserId = me?._id ?? "";
 
   const [sortMode, setSortMode] = useState("newest");
   const [statusFilter, setStatusFilter] = useState("");
@@ -166,18 +164,21 @@ function App() {
           {theme === "light" ? "🌙" : "☀️"}
         </button>
         <h1>Manga Tracker</h1>
+        <div className="auth-section" style={{ marginLeft: "auto" }}>
+          {!isLoaded ? (
+            <span>Loading…</span>
+          ) : isSignedIn ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <UserButton afterSignOutUrl="/" />
+              <span>{me?.name ?? "User"}</span>
+            </div>
+          ) : (
+            <SignInButton mode="modal">
+              <button>Sign In</button>
+            </SignInButton>
+          )}
+        </div>
       </div>
-
-      <h2>Who are you?</h2>
-      <select value={currentUserId} onChange={(e) => setCurrentUserId(e.target.value)}>
-        <option value="">-- Select your name --</option>
-        {users?.map((user) => (
-          <option key={user._id} value={user._id}>{user.name}</option>
-        ))}
-      </select>
-      {effectiveUserId && (
-        <p>Logged in as: {users?.find(u => u._id === effectiveUserId)?.name}</p>
-      )}
 
       <div className="search-center">
         <h2>Search MangaDex to Add a Title</h2>
@@ -282,7 +283,7 @@ function App() {
           </div>
 
           {!effectiveUserId && (
-            <p style={{ fontSize: "0.8rem", opacity: 0.7 }}>Select your name above to continue.</p>
+            <p style={{ fontSize: "0.8rem", opacity: 0.7 }}>Sign in to add titles and rate them.</p>
           )}
 
           {modalError && <p style={{ color: "#ef4444" }}>{modalError}</p>}
@@ -333,7 +334,7 @@ function App() {
         </select>
         {!effectiveUserId && (
           <span style={{ fontSize: "0.8rem", opacity: 0.7, marginLeft: "0.5rem" }}>
-            (select your name to filter)
+            (sign in to filter)
           </span>
         )}
       </div>

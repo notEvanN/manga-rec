@@ -1,8 +1,8 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, MutationCtx, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 
 //Clerk-authenticated helper function
-async function getAuthUser(ctx: any) {
+async function getAuthUser(ctx: MutationCtx | QueryCtx) {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) throw new Error("Not authenticated");
   return identity;
@@ -42,10 +42,11 @@ export const ensure = mutation({
 
     if (existing) return existing._id;
 
-    // First time this Clerk user hits your app
+    // First time Clerk user enters
     return await ctx.db.insert("users", {
       clerkId: identity.subject,
       name: identity.name ?? identity.email ?? "Anonymous",
+      email: identity.email,
     });
   },
 });
