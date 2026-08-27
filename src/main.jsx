@@ -9,21 +9,12 @@ import { api } from "../convex/_generated/api";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
 
-function EnsureUser() {
-  const ensureUser = useMutation(api.users.ensure);
-  
-  useEffect(() => {
-    ensureUser(); 
-  }, [ensureUser]);
-  
-  return <App />;
-}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
       <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-        <EnsureUser />
+        <App />
       </ConvexProviderWithClerk>
     </ClerkProvider>
   </StrictMode>,

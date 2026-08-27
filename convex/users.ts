@@ -33,7 +33,8 @@ export const list = query({
 export const ensure = mutation({
   args: {},
   handler: async (ctx) => {
-    const identity = await getAuthUser(ctx);
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null; // guest browsing
 
     const existing = await ctx.db
       .query("users")
