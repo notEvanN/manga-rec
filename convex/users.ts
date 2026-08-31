@@ -1,4 +1,4 @@
-import { query, mutation, MutationCtx, QueryCtx } from "./_generated/server";
+import { query, mutation, MutationCtx, QueryCtx, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
 //Clerk-authenticated helper function
@@ -49,5 +49,41 @@ export const ensure = mutation({
       name: identity.name ?? identity.email ?? "Anonymous",
       email: identity.email,
     });
+  },
+});
+
+export const deleteByClerkId = internalMutation({
+  args: { clerkId: v.string() },
+  handler: async (ctx, { clerkId }) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", clerkId))
+      .unique();
+
+    if (!user) return;
+
+    // Delete ratings
+    const ratings = await ctx.db
+      .query("ratings")
+      .withIndex("by_user_and_title", (q) => q.eq("userId", user._id))
+      .collect();
+    for (const r of ratings) await ctx.db.delete(r._id);
+
+    // Delete read statuses
+    const statuses = await ctx.db
+      .query("readStatus")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+    for (const s of statuses) await ctx.db.delete(s._id);
+
+    // Disassociate titles
+    const titles = await ctx.db.query("titles").collect();
+    for (const t of titles) {
+      if (t.addedBy === user._id) {
+        await ctx.db.delete(t._id);
+      }
+    }
+
+    await ctx.db.delete(user._id);
   },
 });
