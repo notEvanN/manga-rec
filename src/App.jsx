@@ -4,10 +4,11 @@ import { api } from "../convex/_generated/api";
 import TitleCard from "./TitleCard";
 import TitleDetailModal from "./TitleDetailModal";
 import Modal from "./Modal";
-import { useAuth, SignInButton, UserButton } from "@clerk/clerk-react";
+import { useAuth, useUser, SignInButton, UserButton } from "@clerk/clerk-react";
 
 function App() {
   const { isLoaded, isSignedIn } = useAuth();
+  const { user } = useUser();
   const me = useQuery(api.users.me);  
   const users = useQuery(api.users.list);
   const ensureUser = useMutation(api.users.ensure);
@@ -23,10 +24,15 @@ function App() {
 
   //Ensure Convex user record exists
   useEffect(() => {
-  if (isSignedIn) {
-    ensureUser();
-  }
-}, [isSignedIn, ensureUser]);
+    if (!isLoaded || !user || !isSignedIn || !user) return;
+
+    const name = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || "Anonymous";
+    const email = user.emailAddresses?.[0]?.emailAddress;
+
+    if (name && email) {
+      ensureUser({ name, email });
+    }
+  }, [isLoaded, user, isSignedIn, user, ensureUser]);
 
   const effectiveUserId = me?._id ?? "";
 

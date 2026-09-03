@@ -31,23 +31,36 @@ export const list = query({
 
 // Called after sign-in to create the user record if it doesn't exist yet, replaces create
 export const ensure = mutation({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    name: v.optional(v.string()),
+    email: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return null; // guest browsing
+    if (!identity) return null;
 
     const existing = await ctx.db
       .query("users")
       .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
       .unique();
 
-    if (existing) return existing._id;
+    const name = args.name ?? "Anonymous";
+    const email = args.email ?? undefined;
 
-    // First time Clerk user enters
+    if (existing) {
+      const updates: any = {};
+      if (!existing.name || existing.name === "Anonymous") updates.name = name;
+      if (!existing.email && email) updates.email = email;
+      if (Object.keys(updates).length > 0) {
+        await ctx.db.patch(existing._id, updates);
+      }
+      return existing._id;
+    }
+
     return await ctx.db.insert("users", {
       clerkId: identity.subject,
-      name: identity.name ?? identity.email ?? "Anonymous",
-      email: identity.email,
+      name,
+      email,
     });
   },
 });
