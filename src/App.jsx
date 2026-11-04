@@ -1,20 +1,33 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useAction } from "convex/react";
+import { useUser, SignInButton, UserButton } from "@clerk/clerk-react";
 import { api } from "../convex/_generated/api";
 import TitleCard from "./TitleCard";
 import TitleDetailModal from "./TitleDetailModal";
 import Modal from "./Modal";
-import { useAuth, useUser, SignInButton, UserButton } from "@clerk/clerk-react";
+import { STATUS_OPTIONS, SCORES } from "./constants";
+
+const MIN_SEARCH_LENGTH = 3;
+const SEARCH_DEBOUNCE_MS = 400;
+
+const SORTERS = {
+  newest: null, // server already returns newest first
+  rating: (a, b) => (b.avgRating ?? -1) - (a.avgRating ?? -1),
+  mostRated: (a, b) => b.ratingCount - a.ratingCount || (b.avgRating ?? -1) - (a.avgRating ?? -1),
+};
 
 function App() {
-  const { isLoaded, isSignedIn } = useAuth();
-  const { user } = useUser();
-  const me = useQuery(api.users.me);  
+  const { isLoaded, isSignedIn, user } = useUser();
+  const me = useQuery(api.users.me);
   const users = useQuery(api.users.list);
+  const allTitles = useQuery(api.titles.list);
   const ensureUser = useMutation(api.users.ensure);
   const addTitleWithMetadata = useMutation(api.titles.addWithMetadata);
   const searchMangaDex = useAction(api.mangadex.search);
 
+  const currentUserId = me?._id ?? "";
+
+  // theme
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -22,69 +35,87 @@ function App() {
   }, [theme]);
   const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
 
-  //Ensure Convex user record exists
+  // Make sure a Convex user record exists for the signed-in Clerk user.
   useEffect(() => {
-    if (!isLoaded || !user || !isSignedIn || !user) return;
+    if (!isSignedIn || !user) return;
+    const name = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username;
+    const email = user.primaryEmailAddress?.emailAddress;
+    ensureUser({ name: name || undefined, email }).catch((err) =>
+      console.error("Failed to create user record:", err)
+    );
+  }, [isSignedIn, user, ensureUser]);
 
-    const name = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || "Anonymous";
-    const email = user.emailAddresses?.[0]?.emailAddress;
-
-    if (name && email) {
-      ensureUser({ name, email });
-    }
-  }, [isLoaded, user, isSignedIn, user, ensureUser]);
-
-  const effectiveUserId = me?._id ?? "";
-
+  // sorting + filtering
   const [sortMode, setSortMode] = useState("newest");
   const [statusFilter, setStatusFilter] = useState("");
+  const activeStatusFilter = currentUserId ? statusFilter : "";
 
-  const titlesNewest = useQuery(api.titles.list, sortMode !== "rating" ? {} : "skip");
-  const titlesByRating = useQuery(api.titles.listSortedByRating, sortMode === "rating" ? {} : "skip");
-  const rawTitles = sortMode === "rating" ? titlesByRating : titlesNewest;
-
-  const userStatuses = useQuery(
-    api.readStatus.forUser,
-    effectiveUserId && statusFilter ? { userId: effectiveUserId } : "skip"
-  );
+  const myStatuses = useQuery(api.readStatus.mine, activeStatusFilter ? {} : "skip");
 
   const titles = useMemo(() => {
-    let result = rawTitles;
+    if (!allTitles) return undefined;
 
-    if (sortMode === "mostRated" && result) {
-      result = [...result].sort((a, b) => {
-        if (b.ratingCount !== a.ratingCount) return b.ratingCount - a.ratingCount;
-        return (b.avgRating ?? -1) - (a.avgRating ?? -1);
-      });
-    }
-
-    if (statusFilter && userStatuses) {
-      const matchingTitleIds = new Set(
-        userStatuses.filter((s) => s.status === statusFilter).map((s) => s.titleId)
+    let result = allTitles;
+    if (activeStatusFilter && myStatuses) {
+      const ids = new Set(
+        myStatuses.filter((s) => s.status === activeStatusFilter).map((s) => s.titleId)
       );
-      result = result?.filter((t) => matchingTitleIds.has(t._id));
+      result = result.filter((t) => ids.has(t._id));
     }
 
-    return result;
-  }, [rawTitles, sortMode, statusFilter, userStatuses]);
+    const sorter = SORTERS[sortMode];
+    return sorter ? [...result].sort(sorter) : result;
+  }, [allTitles, sortMode, activeStatusFilter, myStatuses]);
 
-  // detail modal
-  const [selectedTitle, setSelectedTitle] = useState(null);
+  // detail modal: store the id so the modal always shows live data
+  const [selectedTitleId, setSelectedTitleId] = useState(null);
+  const selectedTitle = allTitles?.find((t) => t._id === selectedTitleId);
 
-  // search state
+  // search
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
   const debounceTimer = useRef(null);
   const latestQueryId = useRef(0);
 
-  useEffect(() => {
-    return () => {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    };
-  }, []);
+  useEffect(() => () => clearTimeout(debounceTimer.current), []);
 
-  // add-title modal state
+  const runSearch = async (query) => {
+    const queryId = ++latestQueryId.current;
+    const isLatest = () => queryId === latestQueryId.current;
+    setSearchLoading(true);
+    setSearchError("");
+    try {
+      const results = await searchMangaDex({ query });
+      if (isLatest()) setSearchResults(results);
+    } catch (err) {
+      console.error("MangaDex search failed:", err);
+      if (isLatest()) {
+        setSearchResults([]);
+        setSearchError("Search failed. Please try again.");
+      }
+    } finally {
+      if (isLatest()) setSearchLoading(false);
+    }
+  };
+
+  const resetSearch = () => {
+    clearTimeout(debounceTimer.current);
+    latestQueryId.current++; // ignore any in-flight search
+    setSearchResults([]);
+    setSearchLoading(false);
+    setSearchError("");
+  };
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    resetSearch();
+    if (query.trim().length < MIN_SEARCH_LENGTH) return;
+    debounceTimer.current = setTimeout(() => runSearch(query.trim()), SEARCH_DEBOUNCE_MS);
+  };
+
+  // add-title modal
   const [pendingTitle, setPendingTitle] = useState(null);
   const [editedDescription, setEditedDescription] = useState("");
   const [editedTagsInput, setEditedTagsInput] = useState("");
@@ -94,31 +125,6 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalError, setModalError] = useState("");
 
-  const runSearch = async (query) => {
-    const queryId = ++latestQueryId.current;
-    setSearchLoading(true);
-    try {
-      const results = await searchMangaDex({ query });
-      if (queryId === latestQueryId.current) setSearchResults(results);
-    } catch (err) {
-      console.error("MangaDex search failed:", err);
-      if (queryId === latestQueryId.current) setSearchResults([]);
-    } finally {
-      if (queryId === latestQueryId.current) setSearchLoading(false);
-    }
-  };
-
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    if (query.length < 3) {
-      setSearchResults([]);
-      setSearchLoading(false);
-      return;
-    }
-    debounceTimer.current = setTimeout(() => runSearch(query), 400);
-  };
-
   const openConfirmModal = (result) => {
     setPendingTitle(result);
     setEditedDescription(result.description);
@@ -127,22 +133,21 @@ function App() {
     setInitialStatus("");
     setIsSlop(false);
     setModalError("");
-    setSearchResults([]);
     setSearchQuery("");
+    resetSearch();
   };
 
-  const closeModal = () => {
+  const closeAddModal = () => {
     if (isSubmitting) return;
     setPendingTitle(null);
-    setModalError("");
   };
 
   const confirmAddTitle = async () => {
-    if (isSubmitting || !effectiveUserId) return;
+    if (isSubmitting || !currentUserId) return;
     setIsSubmitting(true);
     setModalError("");
 
-    const tags = editedTagsInput.split(",").map((t) => t.trim()).filter((t) => t.length > 0);
+    const tags = editedTagsInput.split(",").map((t) => t.trim()).filter(Boolean);
 
     try {
       await addTitleWithMetadata({
@@ -151,12 +156,11 @@ function App() {
         tags,
         coverUrl: pendingTitle.coverUrl || undefined,
         mangaDexId: pendingTitle.id,
-        userId: effectiveUserId || undefined,
         score: initialScore ? Number(initialScore) : undefined,
         status: initialStatus || undefined,
         slop: isSlop,
       });
-      closeModal();
+      setPendingTitle(null);
     } catch (err) {
       setModalError(err.message);
     } finally {
@@ -167,18 +171,18 @@ function App() {
   return (
     <div>
       <div className="app-header">
-        <button className="theme-toggle" onClick={toggleTheme}>
+        <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
           {theme === "light" ? "🌙" : "☀️"}
         </button>
         <h1>Manga Tracker</h1>
-        <div className="auth-section" style={{ marginLeft: "auto" }}>
+        <div className="auth-section">
           {!isLoaded ? (
             <span>Loading…</span>
           ) : isSignedIn ? (
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <UserButton afterSignOutUrl="/" />
-              <span>{me?.name ?? "User"}</span>
-            </div>
+            <>
+              <UserButton />
+              <span>{me?.name ?? "…"}</span>
+            </>
           ) : (
             <SignInButton mode="modal">
               <button>Sign In</button>
@@ -196,6 +200,7 @@ function App() {
           onChange={(e) => handleSearch(e.target.value)}
         />
         {searchLoading && <p>Searching...</p>}
+        {searchError && <p className="error">{searchError}</p>}
         {searchResults.length > 0 && (
           <div className="search-results-scroll">
             {searchResults.map((result) => (
@@ -215,14 +220,9 @@ function App() {
       </div>
 
       {pendingTitle && (
-        <Modal onClose={closeModal} ariaLabel={`Add ${pendingTitle.name}`}>
+        <Modal onClose={closeAddModal} ariaLabel={`Add ${pendingTitle.name}`}>
           {pendingTitle.coverUrl && (
-            <img
-              src={pendingTitle.coverUrl}
-              alt=""
-              referrerPolicy="no-referrer"
-              style={{ height: "150px", display: "block", marginBottom: "0.5rem" }}
-            />
+            <img src={pendingTitle.coverUrl} alt="" referrerPolicy="no-referrer" className="add-cover" />
           )}
           <h3>{pendingTitle.name}</h3>
 
@@ -230,10 +230,10 @@ function App() {
             <label htmlFor="modal-description">Description:</label>
             <textarea
               id="modal-description"
+              className="full-width"
               value={editedDescription}
               onChange={(e) => setEditedDescription(e.target.value)}
               rows={4}
-              style={{ width: "100%" }}
             />
           </div>
 
@@ -241,13 +241,13 @@ function App() {
             <label htmlFor="modal-tags">Tags (comma separated):</label>
             <input
               id="modal-tags"
+              className="full-width"
               value={editedTagsInput}
               onChange={(e) => setEditedTagsInput(e.target.value)}
-              style={{ width: "100%" }}
             />
           </div>
 
-          <div className="status-buttons" style={{ marginTop: "0.5rem" }}>
+          <div className="status-buttons section">
             <button
               type="button"
               onClick={() => setIsSlop((v) => !v)}
@@ -258,16 +258,16 @@ function App() {
             </button>
           </div>
 
-          <div style={{ marginTop: "0.75rem" }}>
+          <div className="section">
             <label htmlFor="modal-score">Your rating (optional): </label>
             <select
               id="modal-score"
               value={initialScore}
               onChange={(e) => setInitialScore(e.target.value)}
-              disabled={!effectiveUserId}
+              disabled={!currentUserId}
             >
               <option value="">-- Skip --</option>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+              {SCORES.map((n) => (
                 <option key={n} value={n}>{n}</option>
               ))}
             </select>
@@ -279,27 +279,23 @@ function App() {
               id="modal-status"
               value={initialStatus}
               onChange={(e) => setInitialStatus(e.target.value)}
-              disabled={!effectiveUserId}
+              disabled={!currentUserId}
             >
               <option value="">-- Skip --</option>
-              <option value="plan_to_read">Plan to Read</option>
-              <option value="reading">Reading</option>
-              <option value="completed">Completed</option>
-              <option value="dropped">Dropped</option>
+              {STATUS_OPTIONS.map(({ value, label }) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
             </select>
           </div>
 
-          {!effectiveUserId && (
-            <p style={{ fontSize: "0.8rem", opacity: 0.7 }}>Sign in to add titles and rate them.</p>
-          )}
+          {!currentUserId && <p className="muted">Sign in to add titles and rate them.</p>}
+          {modalError && <p className="error">{modalError}</p>}
 
-          {modalError && <p style={{ color: "#ef4444" }}>{modalError}</p>}
-
-          <div style={{ marginTop: "1rem" }}>
-            <button onClick={confirmAddTitle} disabled={isSubmitting || !effectiveUserId}>
+          <div className="section">
+            <button onClick={confirmAddTitle} disabled={isSubmitting || !currentUserId}>
               {isSubmitting ? "Adding..." : "Add Title"}
             </button>
-            <button onClick={closeModal} style={{ marginLeft: "0.5rem" }} disabled={isSubmitting}>
+            <button onClick={closeAddModal} className="button-gap" disabled={isSubmitting}>
               Cancel
             </button>
           </div>
@@ -308,15 +304,16 @@ function App() {
 
       {selectedTitle && (
         <TitleDetailModal
+          key={selectedTitle._id}
           title={selectedTitle}
-          currentUserId={effectiveUserId}
+          currentUserId={currentUserId}
           users={users}
-          onClose={() => setSelectedTitle(null)}
+          onClose={() => setSelectedTitleId(null)}
         />
       )}
 
       <h2>Titles</h2>
-      <div style={{ margin: "1rem 0" }}>
+      <div className="controls">
         <label htmlFor="sort-mode">Sort by: </label>
         <select id="sort-mode" value={sortMode} onChange={(e) => setSortMode(e.target.value)}>
           <option value="newest">Newest</option>
@@ -324,30 +321,24 @@ function App() {
           <option value="mostRated">Most Rated</option>
         </select>
 
-        {" "}
-
-        <label htmlFor="status-filter">My status: </label>
+        <label htmlFor="status-filter" className="button-gap">My status: </label>
         <select
           id="status-filter"
-          value={statusFilter}
+          value={activeStatusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          disabled={!effectiveUserId}
+          disabled={!currentUserId}
         >
           <option value="">-- All --</option>
-          <option value="plan_to_read">Plan to Read</option>
-          <option value="reading">Reading</option>
-          <option value="completed">Completed</option>
-          <option value="dropped">Dropped</option>
+          {STATUS_OPTIONS.map(({ value, label }) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
         </select>
-        {!effectiveUserId && (
-          <span style={{ fontSize: "0.8rem", opacity: 0.7, marginLeft: "0.5rem" }}>
-            (sign in to filter)
-          </span>
-        )}
+        {!currentUserId && <span className="muted button-gap">(sign in to filter)</span>}
       </div>
+
       <div className="titles-grid">
         {titles?.map((title) => (
-          <TitleCard key={title._id} title={title} onOpen={setSelectedTitle} />
+          <TitleCard key={title._id} title={title} onOpen={setSelectedTitleId} />
         ))}
       </div>
     </div>

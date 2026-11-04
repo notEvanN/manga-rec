@@ -1,5 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { readStatusValidator } from "./schema";
+import { getCurrentUser, requireUser } from "./users";
 
 export const forTitle = query({
   args: { titleId: v.id("titles") },
@@ -11,39 +13,37 @@ export const forTitle = query({
   },
 });
 
-export const setStatus = mutation({
-  args: {
-    userId: v.id("users"),
-    titleId: v.id("titles"),
-    status: v.union(
-      v.literal("reading"),
-      v.literal("completed"),
-      v.literal("plan_to_read"),
-      v.literal("dropped")
-    ),
-  },
-  handler: async (ctx, args) => {
-    const existing = await ctx.db
-      .query("readStatus")
-      .withIndex("by_user_and_title", (q) =>
-        q.eq("userId", args.userId).eq("titleId", args.titleId)
-      )
-      .unique();
+// Statuses for the signed-in user (empty for guests).
+export const mine = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return [];
 
-    if (existing) {
-      await ctx.db.patch(existing._id, { status: args.status });
-    } else {
-      await ctx.db.insert("readStatus", args);
-    }
+    return await ctx.db
+      .query("readStatus")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
   },
 });
 
-export const forUser = query({
-  args: { userId: v.id("users") },
-  handler: async (ctx, { userId }) => {
-    return await ctx.db
+export const setStatus = mutation({
+  args: {
+    titleId: v.id("titles"),
+    status: readStatusValidator,
+  },
+  handler: async (ctx, { titleId, status }) => {
+    const user = await requireUser(ctx);
+
+    const existing = await ctx.db
       .query("readStatus")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .collect();
+      .withIndex("by_user_and_title", (q) => q.eq("userId", user._id).eq("titleId", titleId))
+      .unique();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, { status });
+    } else {
+      await ctx.db.insert("readStatus", { userId: user._id, titleId, status });
+    }
   },
 });

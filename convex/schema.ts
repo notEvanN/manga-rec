@@ -1,11 +1,18 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+export const readStatusValidator = v.union(
+  v.literal("reading"),
+  v.literal("completed"),
+  v.literal("plan_to_read"),
+  v.literal("dropped")
+);
+
 export default defineSchema({
   users: defineTable({
     name: v.string(),
     clerkId: v.optional(v.string()),
-    email: v.optional(v.string()), 
+    email: v.optional(v.string()),
   }).index("by_clerkId", ["clerkId"]),
 
   titles: defineTable({
@@ -16,7 +23,9 @@ export default defineSchema({
     addedBy: v.optional(v.id("users")),
     slop: v.optional(v.boolean()),
     mangaDexId: v.optional(v.string()),
-  }),
+  })
+    .index("by_mangaDexId", ["mangaDexId"])
+    .index("by_addedBy", ["addedBy"]),
 
   ratings: defineTable({
     userId: v.id("users"),
@@ -30,12 +39,7 @@ export default defineSchema({
   readStatus: defineTable({
     userId: v.id("users"),
     titleId: v.id("titles"),
-    status: v.union(
-      v.literal("reading"),
-      v.literal("completed"),
-      v.literal("plan_to_read"),
-      v.literal("dropped")
-    ),
+    status: readStatusValidator,
   })
     .index("by_title", ["titleId"])
     .index("by_user", ["userId"])
