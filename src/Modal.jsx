@@ -2,25 +2,31 @@ import { useEffect, useRef } from "react";
 
 function Modal({ onClose, ariaLabel, children }) {
   const modalRef = useRef(null);
-  const previouslyFocused = useRef(null);
+
+  // Keep the latest onClose in a ref so the mount effect below runs only once.
+  // Otherwise a new onClose on every parent render would re-run it and steal focus.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
-    previouslyFocused.current = document.activeElement;
+    const previouslyFocused = document.activeElement;
     modalRef.current?.focus();
 
     const handleKeyDown = (e) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") onCloseRef.current();
     };
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      previouslyFocused.current?.focus?.();
+      previouslyFocused?.focus?.();
     };
-  }, [onClose]);
+  }, []);
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={() => onCloseRef.current()}>
       <div
         className="modal"
         role="dialog"

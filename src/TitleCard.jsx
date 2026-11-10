@@ -1,8 +1,13 @@
+const TEASER_LENGTH = 100;
+
+// Only phrasing elements (span, strong, img) are valid inside a <button>.
 function TitleCard({ title, onOpen }) {
-  const isLongDescription = title.description && title.description.length > 100;
+  const description = title.description ?? "";
+  const teaser =
+    description.length > TEASER_LENGTH ? `${description.slice(0, TEASER_LENGTH)}...` : description;
 
   return (
-    <button className="title-card title-card-compact" onClick={() => onOpen(title)}>
+    <button className="title-card title-card-compact" onClick={() => onOpen(title._id)}>
       {title.coverUrl && (
         <img
           src={title.coverUrl}
@@ -11,21 +16,18 @@ function TitleCard({ title, onOpen }) {
           className="title-card-cover"
         />
       )}
-      <strong>{title.name}</strong>
+      <strong className="block">{title.name}</strong>
 
       {title.avgRating != null && (
-        <p style={{ fontWeight: "bold" }}>
+        <span className="block rating">
           ⭐ {title.avgRating.toFixed(1)}/10 ({title.ratingCount})
-        </p>
+        </span>
       )}
 
-      <p className="title-card-teaser">
-        {isLongDescription ? `${title.description.slice(0, 100)}...` : title.description}
-      </p>
+      <span className="block title-card-teaser">{teaser}</span>
+      <span className="block title-card-tags">{title.tags.join(", ")}</span>
 
-      <p className="title-card-tags">{title.tags.join(", ")}</p>
-
-      {title.slop && <p style={{ color: "#ef4444", fontWeight: "bold" }}>🚩 Slop</p>}
+      {title.slop && <span className="block slop-badge">🚩 Slop</span>}
     </button>
   );
 }

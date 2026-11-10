@@ -1,51 +1,30 @@
-import { query, mutation, QueryCtx } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { readStatusValidator } from "./schema";
+import { requireUser } from "./users";
+import { validateScore } from "./ratings";
 
-async function attachRatings(ctx: QueryCtx, titles: any[]) {
-  const allRatings = await ctx.db.query("ratings").collect();
-
-  const scoresByTitle: Record<string, number[]> = {};
-  for (const r of allRatings) {
-    if (!scoresByTitle[r.titleId]) scoresByTitle[r.titleId] = [];
-    scoresByTitle[r.titleId].push(r.score);
-  }
-
-  return titles.map((t) => {
-    const scores = scoresByTitle[t._id] || [];
-    const avgRating = scores.length
-      ? scores.reduce((a, b) => a + b, 0) / scores.length
-      : null;
-    return { ...t, avgRating, ratingCount: scores.length };
-  });
-}
-
+// All titles, newest first, with their average rating. Sorting by rating is done client-side.
 export const list = query({
   args: {},
   handler: async (ctx) => {
     const titles = await ctx.db.query("titles").order("desc").collect();
-    return await attachRatings(ctx, titles);
-  },
-});
+    const ratings = await ctx.db.query("ratings").collect();
 
-export const listSortedByRating = query({
-  args: {},
-  handler: async (ctx) => {
-    const titles = await ctx.db.query("titles").collect();
-    const withAvg = await attachRatings(ctx, titles);
-    withAvg.sort((a, b) => (b.avgRating ?? -1) - (a.avgRating ?? -1));
-    return withAvg;
-  },
-});
+    const scoresByTitle = new Map<string, number[]>();
+    for (const r of ratings) {
+      const scores = scoresByTitle.get(r.titleId) ?? [];
+      scores.push(r.score);
+      scoresByTitle.set(r.titleId, scores);
+    }
 
-export const add = mutation({
-  args: {
-    name: v.string(),
-    coverUrl: v.optional(v.string()),
-    description: v.optional(v.string()),
-    tags: v.array(v.string()),
-  },
-  handler: async (ctx, args) => {
-    return await ctx.db.insert("titles", args);
+    return titles.map((t) => {
+      const scores = scoresByTitle.get(t._id) ?? [];
+      const avgRating = scores.length
+        ? scores.reduce((a, b) => a + b, 0) / scores.length
+        : null;
+      return { ...t, avgRating, ratingCount: scores.length };
+    });
   },
 });
 
@@ -55,48 +34,34 @@ export const addWithMetadata = mutation({
     coverUrl: v.optional(v.string()),
     description: v.optional(v.string()),
     tags: v.array(v.string()),
-    mangaDexId: v.optional(v.string()),
-    userId: v.optional(v.id("users")),
+    mangaDexId: v.string(),
     score: v.optional(v.number()),
-    status: v.optional(
-      v.union(
-        v.literal("reading"),
-        v.literal("completed"),
-        v.literal("plan_to_read"),
-        v.literal("dropped")
-      )
-    ),
+    status: v.optional(readStatusValidator),
     slop: v.optional(v.boolean()),
   },
-    handler: async (ctx, args) => {
-      const { userId, score, status, slop, ...titleArgs } = args;
+  handler: async (ctx, args) => {
+    const { score, status, ...titleArgs } = args;
+    const user = await requireUser(ctx);
 
-      if (!userId) {
-        throw new Error("Select your name before adding a title.");
-      }
+    if (score !== undefined) validateScore(score);
 
-      if (score !== undefined && (score < 1 || score > 10)) {
-        throw new Error("Score must be between 1 and 10.");
-      }
+    const duplicate = await ctx.db
+      .query("titles")
+      .withIndex("by_mangaDexId", (q) => q.eq("mangaDexId", titleArgs.mangaDexId))
+      .first();
+    if (duplicate) {
+      throw new Error(`"${duplicate.name}" already exists in the list.`);
+    }
 
-      const existing = await ctx.db.query("titles").collect();
-      const isDuplicate = existing.some(
-        (t) => t.name.trim().toLowerCase() === titleArgs.name.trim().toLowerCase()
-      );
-      if (isDuplicate) {
-        throw new Error(`"${titleArgs.name}" already exists in the list.`);
-      }
+    const titleId = await ctx.db.insert("titles", { ...titleArgs, addedBy: user._id });
 
-      const titleId = await ctx.db.insert("titles", { ...titleArgs, addedBy: userId, slop });
+    if (score !== undefined) {
+      await ctx.db.insert("ratings", { userId: user._id, titleId, score });
+    }
+    if (status !== undefined) {
+      await ctx.db.insert("readStatus", { userId: user._id, titleId, status });
+    }
 
-      if (score !== undefined) {
-        await ctx.db.insert("ratings", { userId, titleId, score });
-      }
-      if (status !== undefined) {
-        await ctx.db.insert("readStatus", { userId, titleId, status });
-      }
-
-      return titleId;
-    },
-  });
-
+    return titleId;
+  },
+});

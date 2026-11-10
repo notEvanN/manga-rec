@@ -2,13 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../convex/_generated/api";
 import Modal from "./Modal";
-
-const statusLabels = {
-  plan_to_read: "Plan to Read",
-  reading: "Reading",
-  completed: "Completed",
-  dropped: "Dropped",
-};
+import { STATUS_OPTIONS, STATUS_LABELS, SCORES } from "./constants";
 
 function TitleDetailModal({ title, currentUserId, users, onClose }) {
   const ratings = useQuery(api.ratings.forTitle, { titleId: title._id });
@@ -18,92 +12,89 @@ function TitleDetailModal({ title, currentUserId, users, onClose }) {
   const setStatus = useMutation(api.readStatus.setStatus);
   const getLatestChapter = useAction(api.mangadex.latestChapter);
 
-  const [score, setScore] = useState(5);
+  // null = user hasn't touched the dropdown yet, so show their existing rating.
+  const [pickedScore, setPickedScore] = useState(null);
   const [actionError, setActionError] = useState("");
   const [latestChapter, setLatestChapter] = useState(undefined);
 
+  const myRating = ratings?.find((r) => r.userId === currentUserId);
+  const score = pickedScore ?? myRating?.score ?? 5;
+  const isSignedIn = Boolean(currentUserId);
+
   useEffect(() => {
-    if (!title.mangaDexId) {
-      setLatestChapter(null);
-      return;
-    }
+    if (!title.mangaDexId) return;
     let cancelled = false;
     getLatestChapter({ mangaDexId: title.mangaDexId })
-      .then((ch) => { if (!cancelled) setLatestChapter(ch); })
-      .catch(() => { if (!cancelled) setLatestChapter(null); });
-    return () => { cancelled = true; };
+      .then((ch) => !cancelled && setLatestChapter(ch))
+      .catch(() => !cancelled && setLatestChapter(null));
+    return () => {
+      cancelled = true;
+    };
   }, [title.mangaDexId, getLatestChapter]);
 
   const getUserName = (userId) => users?.find((u) => u._id === userId)?.name ?? "Unknown";
-  const getStatusLabel = (status) => statusLabels[status] ?? status;
 
-  const handleRate = async () => {
-    if (!currentUserId) return alert("Select your name first");
+  const runAction = async (fn) => {
     setActionError("");
     try {
-      await rate({ userId: currentUserId, titleId: title._id, score: Number(score) });
+      await fn();
     } catch (err) {
       setActionError(err.message);
     }
   };
 
-  const handleStatus = async (status) => {
-    if (!currentUserId) return alert("Select your name first");
-    setActionError("");
-    try {
-      await setStatus({ userId: currentUserId, titleId: title._id, status });
-    } catch (err) {
-      setActionError(err.message);
-    }
-  };
+  const handleRate = () => runAction(() => rate({ titleId: title._id, score }));
+  const handleStatus = (status) => runAction(() => setStatus({ titleId: title._id, status }));
 
   return (
     <Modal onClose={onClose} ariaLabel={title.name}>
       {title.coverUrl && (
-        <img
-          src={title.coverUrl}
-          alt={title.name}
-          referrerPolicy="no-referrer"
-          style={{ height: "200px", display: "block", marginBottom: "0.5rem" }}
-        />
+        <img src={title.coverUrl} alt={title.name} referrerPolicy="no-referrer" className="detail-cover" />
       )}
       <h3>{title.name}</h3>
 
-      {latestChapter === undefined && title.mangaDexId && (
-        <p style={{ fontSize: "0.85rem", opacity: 0.7 }}>Loading latest chapter...</p>
+      {title.mangaDexId && latestChapter === undefined && (
+        <p className="muted">Loading latest chapter...</p>
       )}
-      {latestChapter && (
-        <p style={{ fontSize: "0.9rem" }}>Latest (EN): Chapter {latestChapter}</p>
-      )}
+      {latestChapter && <p>Latest (EN): Chapter {latestChapter}</p>}
 
       {title.avgRating != null && (
-        <p style={{ fontWeight: "bold" }}>
+        <p className="rating">
           ⭐ {title.avgRating.toFixed(1)}/10 ({title.ratingCount} rating{title.ratingCount !== 1 ? "s" : ""})
         </p>
       )}
 
       <p>{title.description}</p>
       <p>Tags: {title.tags.join(", ")}</p>
-      {title.addedBy && <p style={{ fontSize: "0.85rem", opacity: 0.7 }}>Added by: {getUserName(title.addedBy)}</p>}
-      {title.slop && <p style={{ color: "#ef4444", fontWeight: "bold" }}>🚩 Slop</p>}
+      {title.addedBy && <p className="muted">Added by: {getUserName(title.addedBy)}</p>}
+      {title.slop && <p className="slop-badge">🚩 Slop</p>}
 
-      <div style={{ marginTop: "0.75rem" }}>
-        <select value={score} onChange={(e) => setScore(e.target.value)}>
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+      <div className="section">
+        <select
+          aria-label="Your rating"
+          value={score}
+          onChange={(e) => setPickedScore(Number(e.target.value))}
+          disabled={!isSignedIn}
+        >
+          {SCORES.map((n) => (
             <option key={n} value={n}>{n}</option>
           ))}
         </select>
-        <button onClick={handleRate}>Rate</button>
+        <button onClick={handleRate} disabled={!isSignedIn}>
+          {myRating ? "Update rating" : "Rate"}
+        </button>
       </div>
 
       <div className="status-buttons">
-        <button onClick={() => handleStatus("plan_to_read")}>Plan to Read</button>
-        <button onClick={() => handleStatus("reading")}>Reading</button>
-        <button onClick={() => handleStatus("completed")}>Completed</button>
-        <button onClick={() => handleStatus("dropped")}>Dropped</button>
+        {STATUS_OPTIONS.map(({ value, label }) => (
+          <button key={value} onClick={() => handleStatus(value)} disabled={!isSignedIn}>
+            {label}
+          </button>
+        ))}
       </div>
 
-      {actionError && <p style={{ color: "#ef4444" }}>{actionError}</p>}
+      {!isSignedIn && <p className="muted">Sign in to rate or track this title.</p>}
+      {actionError && <p className="error">{actionError}</p>}
 
       <h4>Ratings</h4>
       {ratings?.map((r) => (
@@ -112,10 +103,10 @@ function TitleDetailModal({ title, currentUserId, users, onClose }) {
 
       <h4>Status</h4>
       {statuses?.map((s) => (
-        <p key={s._id}>{getUserName(s.userId)}: {getStatusLabel(s.status)}</p>
+        <p key={s._id}>{getUserName(s.userId)}: {STATUS_LABELS[s.status] ?? s.status}</p>
       ))}
 
-      <div style={{ marginTop: "1rem" }}>
+      <div className="section">
         <button onClick={onClose}>Close</button>
       </div>
     </Modal>
