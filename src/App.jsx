@@ -209,9 +209,6 @@ function App() {
                 onClick={() => openConfirmModal(result)}
                 className="search-result-row"
               >
-                {result.coverUrl && (
-                  <img src={result.coverUrl} alt="" referrerPolicy="no-referrer" className="search-result-thumb" />
-                )}
                 {result.name}
               </button>
             ))}
@@ -221,9 +218,6 @@ function App() {
 
       {pendingTitle && (
         <Modal onClose={closeAddModal} ariaLabel={`Add ${pendingTitle.name}`}>
-          {pendingTitle.coverUrl && (
-            <img src={pendingTitle.coverUrl} alt="" referrerPolicy="no-referrer" className="add-cover" />
-          )}
           <h3>{pendingTitle.name}</h3>
 
           <div>

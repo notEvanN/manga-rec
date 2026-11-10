@@ -9,12 +9,7 @@ function TitleCard({ title, onOpen }) {
   return (
     <button className="title-card title-card-compact" onClick={() => onOpen(title._id)}>
       {title.coverUrl && (
-        <img
-          src={title.coverUrl}
-          alt={title.name}
-          referrerPolicy="no-referrer"
-          className="title-card-cover"
-        />
+        <img src={title.coverUrl} alt={title.name} className="title-card-cover" />
       )}
       <strong className="block">{title.name}</strong>
 

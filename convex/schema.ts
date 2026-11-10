@@ -17,7 +17,8 @@ export default defineSchema({
 
   titles: defineTable({
     name: v.string(),
-    coverUrl: v.optional(v.string()),
+    coverUrl: v.optional(v.string()), // original MangaDex URL (can't be embedded directly)
+    coverStorageId: v.optional(v.id("_storage")), // our stored copy, shown in the app
     description: v.optional(v.string()),
     tags: v.array(v.string()),
     addedBy: v.optional(v.id("users")),
