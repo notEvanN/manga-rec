@@ -49,7 +49,7 @@ function TitleDetailModal({ title, currentUserId, users, onClose }) {
   return (
     <Modal onClose={onClose} ariaLabel={title.name}>
       {title.coverUrl && (
-        <img src={title.coverUrl} alt={title.name} referrerPolicy="no-referrer" className="detail-cover" />
+        <img src={title.coverUrl} alt={title.name} className="detail-cover" />
       )}
       <h3>{title.name}</h3>
 

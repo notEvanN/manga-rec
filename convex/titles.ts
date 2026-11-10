@@ -3,6 +3,8 @@ import { v } from "convex/values";
 import { readStatusValidator } from "./schema";
 import { requireUser } from "./users";
 import { validateScore } from "./ratings";
+import { internal } from "./_generated/api";
+import { MANGADEX_COVER_PREFIX } from "./covers";
 
 // All titles, newest first, with their average rating. Sorting by rating is done client-side.
 export const list = query({
@@ -18,13 +20,19 @@ export const list = query({
       scoresByTitle.set(r.titleId, scores);
     }
 
-    return titles.map((t) => {
-      const scores = scoresByTitle.get(t._id) ?? [];
-      const avgRating = scores.length
-        ? scores.reduce((a, b) => a + b, 0) / scores.length
-        : null;
-      return { ...t, avgRating, ratingCount: scores.length };
-    });
+    return Promise.all(
+      titles.map(async (t) => {
+        const scores = scoresByTitle.get(t._id) ?? [];
+        const avgRating = scores.length
+          ? scores.reduce((a, b) => a + b, 0) / scores.length
+          : null;
+        // Serve our stored copy; the MangaDex URL itself won't load in browsers.
+        const coverUrl = t.coverStorageId
+          ? (await ctx.storage.getUrl(t.coverStorageId)) ?? undefined
+          : undefined;
+        return { ...t, coverUrl, avgRating, ratingCount: scores.length };
+      })
+    );
   },
 });
 
@@ -44,6 +52,9 @@ export const addWithMetadata = mutation({
     const user = await requireUser(ctx);
 
     if (score !== undefined) validateScore(score);
+    if (titleArgs.coverUrl && !titleArgs.coverUrl.startsWith(MANGADEX_COVER_PREFIX)) {
+      throw new Error("Cover must come from MangaDex.");
+    }
 
     const duplicate = await ctx.db
       .query("titles")
@@ -54,6 +65,13 @@ export const addWithMetadata = mutation({
     }
 
     const titleId = await ctx.db.insert("titles", { ...titleArgs, addedBy: user._id });
+
+    if (titleArgs.coverUrl) {
+      await ctx.scheduler.runAfter(0, internal.covers.download, {
+        titleId,
+        coverUrl: titleArgs.coverUrl,
+      });
+    }
 
     if (score !== undefined) {
       await ctx.db.insert("ratings", { userId: user._id, titleId, score });

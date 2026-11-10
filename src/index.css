@@ -148,10 +148,6 @@ form {
   background: var(--button-hover);
 }
 
-.search-result-thumb {
-  height: 40px;
-  margin-right: 0.5rem;
-}
 
 .modal-overlay {
   position: fixed;
@@ -242,4 +238,3 @@ button:disabled {
 .title-card-tags { margin: 0.5rem 0; }
 
 .detail-cover { height: 200px; display: block; margin-bottom: 0.5rem; }
-.add-cover { height: 150px; display: block; margin-bottom: 0.5rem; }
