@@ -1,0 +1,2 @@
+# Store text files with LF line endings for everyone (Windows and Mac).
+* text=auto eol=lf
