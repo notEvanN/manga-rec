@@ -1,12 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { requireUser } from "./users";
-
-export function validateScore(score: number) {
-  if (!Number.isInteger(score) || score < 1 || score > 10) {
-    throw new Error("Score must be a whole number between 1 and 10.");
-  }
-}
+import { requireUser } from "./lib/auth";
+import { validateScore } from "./lib/validators";
 
 export const forTitle = query({
   args: { titleId: v.id("titles") },

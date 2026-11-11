@@ -1,7 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { readStatusValidator } from "./schema";
-import { getCurrentUser, requireUser } from "./users";
+import { readStatusValidator } from "./lib/validators";
+import { getCurrentUser, requireUser } from "./lib/auth";
 
 export const forTitle = query({
   args: { titleId: v.id("titles") },

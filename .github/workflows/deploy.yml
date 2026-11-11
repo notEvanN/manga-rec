@@ -1,0 +1,64 @@
+name: Deploy
+
+# Deploys to production on every merge to main. Can also be run by hand from the Actions tab.
+#
+# Required repository secrets (Settings > Secrets and variables > Actions > Secrets):
+#   CONVEX_DEPLOY_KEY      Convex dashboard > production deployment > Settings > Deploy key
+#   AWS_ACCESS_KEY_ID      IAM user allowed to write the S3 bucket and invalidate CloudFront
+#   AWS_SECRET_ACCESS_KEY
+# Required repository variables (same page > Variables):
+#   AWS_REGION                  region of the S3 bucket, e.g. ap-southeast-2
+#   VITE_CONVEX_URL             https://kindly-nightingale-851.convex.cloud
+#   VITE_CLERK_PUBLISHABLE_KEY  Clerk publishable key (public, safe as a variable)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Never run two deploys at once; a newer merge waits for the current deploy to finish.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Lint, typecheck and format check
+        run: npm run check
+
+      # Build before deploying the backend, so a broken build stops the deploy
+      # before production is changed at all.
+      - name: Build frontend
+        run: npm run build
+        env:
+          VITE_CONVEX_URL: ${{ vars.VITE_CONVEX_URL }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ vars.VITE_CLERK_PUBLISHABLE_KEY }}
+
+      - name: Deploy Convex backend
+        run: npx convex deploy
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Upload frontend to S3
+        run: aws s3 sync dist/ s3://manga-sharehub --delete
+
+      - name: Invalidate CloudFront cache
+        run: aws cloudfront create-invalidation --distribution-id ERO8V22V1NRHO --paths "/*"

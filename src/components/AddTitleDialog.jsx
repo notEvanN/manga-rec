@@ -16,8 +16,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { api } from "../convex/_generated/api";
-import { STATUS_OPTIONS } from "./constants";
+import { api } from "../../convex/_generated/api";
+import { STATUS_OPTIONS } from "../lib/constants";
 
 // Confirm and edit a MangaDex search result before adding it to the list.
 // Render with key={title.id} so the form resets for each new title.
@@ -43,7 +43,10 @@ function AddTitleDialog({ title, isSignedIn, onClose }) {
       await addTitle({
         name: title.name,
         description,
-        tags: tagsInput.split(",").map((t) => t.trim()).filter(Boolean),
+        tags: tagsInput
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
         coverUrl: title.coverUrl || undefined,
         mangaDexId: title.id,
         score: score ?? undefined,
@@ -101,12 +104,20 @@ function AddTitleDialog({ title, isSignedIn, onClose }) {
               <em>None</em>
             </MenuItem>
             {STATUS_OPTIONS.map(({ value, label }) => (
-              <MenuItem key={value} value={value}>{label}</MenuItem>
+              <MenuItem key={value} value={value}>
+                {label}
+              </MenuItem>
             ))}
           </TextField>
 
           <FormControlLabel
-            control={<Switch color="error" checked={isSlop} onChange={(e) => setIsSlop(e.target.checked)} />}
+            control={
+              <Switch
+                color="error"
+                checked={isSlop}
+                onChange={(e) => setIsSlop(e.target.checked)}
+              />
+            }
             label="Mark as slop"
           />
 
@@ -116,7 +127,9 @@ function AddTitleDialog({ title, isSignedIn, onClose }) {
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={close} disabled={isSubmitting}>Cancel</Button>
+        <Button onClick={close} disabled={isSubmitting}>
+          Cancel
+        </Button>
         <Button variant="contained" onClick={submit} loading={isSubmitting} disabled={!isSignedIn}>
           Add title
         </Button>

@@ -1,10 +1,8 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { readStatusValidator } from "./schema";
-import { requireUser } from "./users";
-import { validateScore } from "./ratings";
 import { internal } from "./_generated/api";
-import { MANGADEX_COVER_PREFIX } from "./covers";
+import { requireUser } from "./lib/auth";
+import { readStatusValidator, validateScore, MANGADEX_COVER_PREFIX } from "./lib/validators";
 
 // All titles, newest first, with their average rating. Sorting by rating is done client-side.
 export const list = query({
@@ -23,15 +21,13 @@ export const list = query({
     return Promise.all(
       titles.map(async (t) => {
         const scores = scoresByTitle.get(t._id) ?? [];
-        const avgRating = scores.length
-          ? scores.reduce((a, b) => a + b, 0) / scores.length
-          : null;
+        const avgRating = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
         // Serve our stored copy; the MangaDex URL itself won't load in browsers.
         const coverUrl = t.coverStorageId
-          ? (await ctx.storage.getUrl(t.coverStorageId)) ?? undefined
+          ? ((await ctx.storage.getUrl(t.coverStorageId)) ?? undefined)
           : undefined;
         return { ...t, coverUrl, avgRating, ratingCount: scores.length };
-      })
+      }),
     );
   },
 });

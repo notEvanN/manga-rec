@@ -12,7 +12,7 @@ import {
   TextField,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { api } from "../convex/_generated/api";
+import { api } from "../../convex/_generated/api";
 
 const MIN_SEARCH_LENGTH = 3;
 const SEARCH_DEBOUNCE_MS = 400;
@@ -86,14 +86,21 @@ function TitleSearch({ onPick }) {
         }}
       />
 
-      {error && <Alert severity="error" sx={{ mt: 1 }}>{error}</Alert>}
+      {error && (
+        <Alert severity="error" sx={{ mt: 1 }}>
+          {error}
+        </Alert>
+      )}
 
       {results.length > 0 && (
         <Paper variant="outlined" sx={{ mt: 1, maxHeight: 320, overflowY: "auto" }}>
           <List dense disablePadding>
             {results.map((result) => (
               <ListItemButton key={result.id} onClick={() => pick(result)} divider>
-                <ListItemText primary={result.name} secondary={result.tags.slice(0, 4).join(" · ")} />
+                <ListItemText
+                  primary={result.name}
+                  secondary={result.tags.slice(0, 4).join(" · ")}
+                />
               </ListItemButton>
             ))}
           </List>

@@ -1,12 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-
-export const readStatusValidator = v.union(
-  v.literal("reading"),
-  v.literal("completed"),
-  v.literal("plan_to_read"),
-  v.literal("dropped")
-);
+import { readStatusValidator } from "./lib/validators";
 
 export default defineSchema({
   users: defineTable({

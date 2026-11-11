@@ -17,7 +17,10 @@ function Header({ userName }) {
         </Typography>
 
         <Tooltip title={isDark ? "Light mode" : "Dark mode"}>
-          <IconButton onClick={() => setMode(isDark ? "light" : "dark")} aria-label="Toggle dark mode">
+          <IconButton
+            onClick={() => setMode(isDark ? "light" : "dark")}
+            aria-label="Toggle dark mode"
+          >
             {isDark ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
         </Tooltip>
