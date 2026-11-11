@@ -6,7 +6,7 @@ A small site to track manga/manhwa recommendations with friends: add titles, tag
 
 ## How it works
 
-- Sign in with Google
+- Sign in with Google or a username and password
 - Search MangaDex and add titles with tags and a description
 - Rate titles 1–10 and mark your read status (plan to read / reading / completed / dropped)
 - Everyone's ratings and statuses show up live, per title

@@ -4,7 +4,7 @@
 
 - **Frontend**: React + Vite + MUI
 - **Backend**: Convex (database + serverless functions)
-- **Auth**: Clerk (sign-in via GitHub, Discord, Google)
+- **Auth**: Clerk (sign-in with Google or username and password)
 - **Hosting**: AWS S3 + CloudFront
 
 ## Getting Started
