@@ -16,8 +16,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { api } from "../convex/_generated/api";
-import { STATUS_OPTIONS } from "./constants";
+import { api } from "../../convex/_generated/api";
+import { STATUS_OPTIONS } from "../lib/constants";
 
 // Confirm and edit a MangaDex search result before adding it to the list.
 // Render with key={title.id} so the form resets for each new title.

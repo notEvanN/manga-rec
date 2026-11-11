@@ -12,7 +12,7 @@ import {
   TextField,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { api } from "../convex/_generated/api";
+import { api } from "../../convex/_generated/api";
 
 const MIN_SEARCH_LENGTH = 3;
 const SEARCH_DEBOUNCE_MS = 400;

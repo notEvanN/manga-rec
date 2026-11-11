@@ -3,12 +3,12 @@ import { useQuery, useMutation } from "convex/react";
 import { useUser } from "@clerk/clerk-react";
 import { Box, Container, MenuItem, Skeleton, Stack, TextField, Typography } from "@mui/material";
 import { api } from "../convex/_generated/api";
-import Header from "./Header";
-import TitleSearch from "./TitleSearch";
-import TitleCard from "./TitleCard";
-import AddTitleDialog from "./AddTitleDialog";
-import TitleDetailDialog from "./TitleDetailDialog";
-import { STATUS_OPTIONS } from "./constants";
+import Header from "./components/Header";
+import TitleSearch from "./components/TitleSearch";
+import TitleCard from "./components/TitleCard";
+import AddTitleDialog from "./components/AddTitleDialog";
+import TitleDetailDialog from "./components/TitleDetailDialog";
+import { STATUS_OPTIONS } from "./lib/constants";
 
 const SORTERS = {
   newest: null, // server already returns newest first

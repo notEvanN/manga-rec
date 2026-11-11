@@ -1,34 +1,10 @@
-import { Box, Card, CardActionArea, CardContent, CardMedia, Chip, Stack, Typography } from "@mui/material";
+import { Card, CardActionArea, CardContent, CardMedia, Chip, Stack, Typography } from "@mui/material";
 import StarIcon from "@mui/icons-material/Star";
 import FlagIcon from "@mui/icons-material/Flag";
-import { hoverLift } from "./theme";
+import { hoverLift } from "../theme/theme";
+import CoverPlaceholder from "./CoverPlaceholder";
 
 const COVER_HEIGHT = 220;
-
-// Shown while a cover is still downloading, or when a title has none.
-export function CoverPlaceholder({ name, height = COVER_HEIGHT }) {
-  const initials = name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((word) => word[0])
-    .join("")
-    .toUpperCase();
-
-  return (
-    <Box
-      sx={{
-        height,
-        display: "grid",
-        placeItems: "center",
-        bgcolor: "action.hover",
-        color: "text.secondary",
-        typography: "h2",
-      }}
-    >
-      {initials}
-    </Box>
-  );
-}
 
 function TitleCard({ title, onOpen }) {
   return (
@@ -39,7 +15,7 @@ function TitleCard({ title, onOpen }) {
         {title.coverUrl ? (
           <CardMedia component="img" image={title.coverUrl} alt={title.name} sx={{ height: COVER_HEIGHT }} />
         ) : (
-          <CoverPlaceholder name={title.name} />
+          <CoverPlaceholder name={title.name} height={COVER_HEIGHT} />
         )}
 
         <CardContent>

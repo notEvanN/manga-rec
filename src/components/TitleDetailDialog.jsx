@@ -21,9 +21,9 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import StarIcon from "@mui/icons-material/Star";
 import FlagIcon from "@mui/icons-material/Flag";
-import { api } from "../convex/_generated/api";
-import { STATUS_OPTIONS, STATUS_LABELS } from "./constants";
-import { CoverPlaceholder } from "./TitleCard";
+import { api } from "../../convex/_generated/api";
+import { STATUS_OPTIONS, STATUS_LABELS } from "../lib/constants";
+import CoverPlaceholder from "./CoverPlaceholder";
 
 function TitleDetailDialog({ title, currentUserId, users, onClose }) {
   const ratings = useQuery(api.ratings.forTitle, { titleId: title._id });
