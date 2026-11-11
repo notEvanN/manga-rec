@@ -4,7 +4,8 @@ import { createTheme } from "@mui/material/styles";
 // Change colors, fonts, spacing and component defaults here, not in individual components.
 // In components, use theme values (e.g. color="text.secondary", sx={{ p: 2 }}) instead of raw CSS.
 
-const fontFamily = 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+const fontFamily =
+  'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
 export const theme = createTheme({
   // Light and dark palettes. The user's choice is saved and applied by ThemeProvider (see main.jsx).
@@ -39,7 +40,9 @@ export const theme = createTheme({
   components: {
     MuiAppBar: {
       defaultProps: { elevation: 0, color: "inherit", position: "sticky" },
-      styleOverrides: { root: ({ theme }) => ({ borderBottom: `1px solid ${theme.vars.palette.divider}` }) },
+      styleOverrides: {
+        root: ({ theme }) => ({ borderBottom: `1px solid ${theme.vars.palette.divider}` }),
+      },
     },
     MuiButton: { defaultProps: { disableElevation: true } },
     MuiCard: { defaultProps: { variant: "outlined" } },

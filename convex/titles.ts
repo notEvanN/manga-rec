@@ -21,15 +21,13 @@ export const list = query({
     return Promise.all(
       titles.map(async (t) => {
         const scores = scoresByTitle.get(t._id) ?? [];
-        const avgRating = scores.length
-          ? scores.reduce((a, b) => a + b, 0) / scores.length
-          : null;
+        const avgRating = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
         // Serve our stored copy; the MangaDex URL itself won't load in browsers.
         const coverUrl = t.coverStorageId
-          ? (await ctx.storage.getUrl(t.coverStorageId)) ?? undefined
+          ? ((await ctx.storage.getUrl(t.coverStorageId)) ?? undefined)
           : undefined;
         return { ...t, coverUrl, avgRating, ratingCount: scores.length };
-      })
+      }),
     );
   },
 });

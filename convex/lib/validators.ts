@@ -4,7 +4,7 @@ export const readStatusValidator = v.union(
   v.literal("reading"),
   v.literal("completed"),
   v.literal("plan_to_read"),
-  v.literal("dropped")
+  v.literal("dropped"),
 );
 
 export function validateScore(score: number) {

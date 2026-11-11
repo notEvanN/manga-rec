@@ -47,7 +47,7 @@ export const search = action({
   args: { query: v.string() },
   handler: async (_ctx, { query }) => {
     const results = await fetchMangaDex<MangaDexManga>(
-      `/manga?title=${encodeURIComponent(query)}&limit=20&includes[]=cover_art`
+      `/manga?title=${encodeURIComponent(query)}&limit=20&includes[]=cover_art`,
     );
 
     return results.map((manga) => {
@@ -75,7 +75,7 @@ export const latestChapter = action({
   handler: async (_ctx, { mangaDexId }) => {
     const chapters = await fetchMangaDex<MangaDexChapter>(
       `/manga/${encodeURIComponent(mangaDexId)}/feed?translatedLanguage[]=en&order[chapter]=desc&limit=1` +
-        `&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica`
+        `&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica`,
     );
     return chapters[0]?.attributes?.chapter || null;
   },

@@ -17,8 +17,10 @@ export const mergeUsers = internalMutation({
     const oldUser = await ctx.db.get(oldUserId);
     const newUser = await ctx.db.get(newUserId);
     if (!oldUser || !newUser) throw new Error("User not found.");
-    if (oldUser.clerkId) throw new Error(`"${oldUser.name}" already has a Clerk account; refusing to merge it away.`);
-    if (!newUser.clerkId) throw new Error(`"${newUser.name}" has no Clerk account; it must be the signed-up user.`);
+    if (oldUser.clerkId)
+      throw new Error(`"${oldUser.name}" already has a Clerk account; refusing to merge it away.`);
+    if (!newUser.clerkId)
+      throw new Error(`"${newUser.name}" has no Clerk account; it must be the signed-up user.`);
 
     let moved = 0;
     let skipped = 0;

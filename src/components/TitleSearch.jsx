@@ -86,14 +86,21 @@ function TitleSearch({ onPick }) {
         }}
       />
 
-      {error && <Alert severity="error" sx={{ mt: 1 }}>{error}</Alert>}
+      {error && (
+        <Alert severity="error" sx={{ mt: 1 }}>
+          {error}
+        </Alert>
+      )}
 
       {results.length > 0 && (
         <Paper variant="outlined" sx={{ mt: 1, maxHeight: 320, overflowY: "auto" }}>
           <List dense disablePadding>
             {results.map((result) => (
               <ListItemButton key={result.id} onClick={() => pick(result)} divider>
-                <ListItemText primary={result.name} secondary={result.tags.slice(0, 4).join(" · ")} />
+                <ListItemText
+                  primary={result.name}
+                  secondary={result.tags.slice(0, 4).join(" · ")}
+                />
               </ListItemButton>
             ))}
           </List>

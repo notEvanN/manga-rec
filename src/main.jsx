@@ -15,11 +15,14 @@ createRoot(document.getElementById("root")).render(
     {/* modeStorageKey "theme" keeps the light/dark choice people saved before MUI */}
     <ThemeProvider theme={theme} defaultMode="system" modeStorageKey="theme">
       <CssBaseline enableColorScheme />
-      <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY} afterSignOutUrl="/">
+      <ClerkProvider
+        publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
+        afterSignOutUrl="/"
+      >
         <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
           <App />
         </ConvexProviderWithClerk>
       </ClerkProvider>
     </ThemeProvider>
-  </StrictMode>
+  </StrictMode>,
 );

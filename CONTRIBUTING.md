@@ -40,6 +40,7 @@ The current design works but is plain. Some directions:
   - Ratings update smoothly
 
   Respect `prefers-reduced-motion` so people who turn animations off don't get them.
+
 - **Loading skeletons**: grey placeholder cards while titles load, instead of an empty page.
 - **Cover placeholder**: titles without a cover (or while it's still downloading) show a blank space. A styled placeholder with the title's initials would look better.
 - **Better title cards**: rating shown as a badge on the cover, tags as small chips, status shown as a colored ribbon.

@@ -1,4 +1,12 @@
-import { Card, CardActionArea, CardContent, CardMedia, Chip, Stack, Typography } from "@mui/material";
+import {
+  Card,
+  CardActionArea,
+  CardContent,
+  CardMedia,
+  Chip,
+  Stack,
+  Typography,
+} from "@mui/material";
 import StarIcon from "@mui/icons-material/Star";
 import FlagIcon from "@mui/icons-material/Flag";
 import { hoverLift } from "../theme/theme";
@@ -13,7 +21,12 @@ function TitleCard({ title, onOpen }) {
           MUI still gives it role="button", keyboard focus and Enter/Space handling. */}
       <CardActionArea component="div" onClick={() => onOpen(title._id)} sx={{ height: "100%" }}>
         {title.coverUrl ? (
-          <CardMedia component="img" image={title.coverUrl} alt={title.name} sx={{ height: COVER_HEIGHT }} />
+          <CardMedia
+            component="img"
+            image={title.coverUrl}
+            alt={title.name}
+            sx={{ height: COVER_HEIGHT }}
+          />
         ) : (
           <CoverPlaceholder name={title.name} height={COVER_HEIGHT} />
         )}
@@ -38,7 +51,12 @@ function TitleCard({ title, onOpen }) {
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+            sx={{
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
           >
             {title.description}
           </Typography>

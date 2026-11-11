@@ -37,7 +37,7 @@ function App() {
     const name = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username;
     const email = user.primaryEmailAddress?.emailAddress;
     ensureUser({ name: name || undefined, email }).catch((err) =>
-      console.error("Failed to create user record:", err)
+      console.error("Failed to create user record:", err),
     );
   }, [isSignedIn, user, ensureUser]);
 
@@ -53,7 +53,7 @@ function App() {
     let result = allTitles;
     if (activeStatusFilter && myStatuses) {
       const ids = new Set(
-        myStatuses.filter((s) => s.status === activeStatusFilter).map((s) => s.titleId)
+        myStatuses.filter((s) => s.status === activeStatusFilter).map((s) => s.titleId),
       );
       result = result.filter((t) => ids.has(t._id));
     }
@@ -79,7 +79,9 @@ function App() {
           spacing={2}
           sx={{ justifyContent: "space-between", alignItems: { sm: "center" }, mt: 5, mb: 2 }}
         >
-          <Typography variant="h2" component="h2">Titles</Typography>
+          <Typography variant="h2" component="h2">
+            Titles
+          </Typography>
 
           <Stack direction="row" spacing={1.5}>
             <TextField
@@ -106,7 +108,9 @@ function App() {
             >
               <MenuItem value="">All</MenuItem>
               {STATUS_OPTIONS.map(({ value, label }) => (
-                <MenuItem key={value} value={value}>{label}</MenuItem>
+                <MenuItem key={value} value={value}>
+                  {label}
+                </MenuItem>
               ))}
             </TextField>
           </Stack>
