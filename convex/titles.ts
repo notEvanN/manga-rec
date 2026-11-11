@@ -1,10 +1,8 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { readStatusValidator } from "./schema";
-import { requireUser } from "./users";
-import { validateScore } from "./ratings";
 import { internal } from "./_generated/api";
-import { MANGADEX_COVER_PREFIX } from "./covers";
+import { requireUser } from "./lib/auth";
+import { readStatusValidator, validateScore, MANGADEX_COVER_PREFIX } from "./lib/validators";
 
 // All titles, newest first, with their average rating. Sorting by rating is done client-side.
 export const list = query({
