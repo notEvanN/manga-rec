@@ -1,29 +1,81 @@
-const TEASER_LENGTH = 100;
+import { Box, Card, CardActionArea, CardContent, CardMedia, Chip, Stack, Typography } from "@mui/material";
+import StarIcon from "@mui/icons-material/Star";
+import FlagIcon from "@mui/icons-material/Flag";
+import { hoverLift } from "./theme";
 
-// Only phrasing elements (span, strong, img) are valid inside a <button>.
-function TitleCard({ title, onOpen }) {
-  const description = title.description ?? "";
-  const teaser =
-    description.length > TEASER_LENGTH ? `${description.slice(0, TEASER_LENGTH)}...` : description;
+const COVER_HEIGHT = 220;
+
+// Shown while a cover is still downloading, or when a title has none.
+export function CoverPlaceholder({ name, height = COVER_HEIGHT }) {
+  const initials = name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
 
   return (
-    <button className="title-card title-card-compact" onClick={() => onOpen(title._id)}>
-      {title.coverUrl && (
-        <img src={title.coverUrl} alt={title.name} className="title-card-cover" />
-      )}
-      <strong className="block">{title.name}</strong>
+    <Box
+      sx={{
+        height,
+        display: "grid",
+        placeItems: "center",
+        bgcolor: "action.hover",
+        color: "text.secondary",
+        typography: "h2",
+      }}
+    >
+      {initials}
+    </Box>
+  );
+}
 
-      {title.avgRating != null && (
-        <span className="block rating">
-          ⭐ {title.avgRating.toFixed(1)}/10 ({title.ratingCount})
-        </span>
-      )}
+function TitleCard({ title, onOpen }) {
+  return (
+    <Card sx={{ height: "100%", ...hoverLift }}>
+      {/* component="div" keeps the HTML valid (block content isn't allowed inside <button>);
+          MUI still gives it role="button", keyboard focus and Enter/Space handling. */}
+      <CardActionArea component="div" onClick={() => onOpen(title._id)} sx={{ height: "100%" }}>
+        {title.coverUrl ? (
+          <CardMedia component="img" image={title.coverUrl} alt={title.name} sx={{ height: COVER_HEIGHT }} />
+        ) : (
+          <CoverPlaceholder name={title.name} />
+        )}
 
-      <span className="block title-card-teaser">{teaser}</span>
-      <span className="block title-card-tags">{title.tags.join(", ")}</span>
+        <CardContent>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.3 }} gutterBottom>
+            {title.name}
+          </Typography>
 
-      {title.slop && <span className="block slop-badge">🚩 Slop</span>}
-    </button>
+          {title.avgRating != null && (
+            <Stack direction="row" spacing={0.5} sx={{ alignItems: "center", mb: 1 }}>
+              <StarIcon color="secondary" fontSize="small" />
+              <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                {title.avgRating.toFixed(1)}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                ({title.ratingCount})
+              </Typography>
+            </Stack>
+          )}
+
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+          >
+            {title.description}
+          </Typography>
+
+          <Stack direction="row" useFlexGap spacing={0.5} sx={{ flexWrap: "wrap", mt: 1.5 }}>
+            {title.slop && <Chip icon={<FlagIcon />} label="Slop" color="error" />}
+            {title.tags.slice(0, 3).map((tag) => (
+              <Chip key={tag} label={tag} variant="outlined" />
+            ))}
+          </Stack>
+        </CardContent>
+      </CardActionArea>
+    </Card>
   );
 }
 
