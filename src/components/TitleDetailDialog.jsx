@@ -96,7 +96,9 @@ function TitleDetailDialog({ title, currentUserId, users, onClose }) {
                 sx={{ width: "100%", maxHeight: 260, objectFit: "cover", display: "block" }}
               />
             ) : (
-              <CoverPlaceholder name={title.name} height={220} />
+              <Box sx={{ position: "relative", height: 220 }}>
+                <CoverPlaceholder name={title.name} />
+              </Box>
             )}
           </Box>
 
@@ -105,14 +107,14 @@ function TitleDetailDialog({ title, currentUserId, users, onClose }) {
               <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
                 <StarIcon color="secondary" />
                 <Typography sx={{ fontWeight: 700 }}>{title.avgRating.toFixed(1)}/10</Typography>
-                <Typography color="text.secondary">
+                <Typography color="textSecondary">
                   ({title.ratingCount} rating{title.ratingCount !== 1 ? "s" : ""})
                 </Typography>
               </Stack>
             )}
 
             {title.mangaDexId && (
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="textSecondary">
                 {latestChapter === undefined
                   ? "Loading latest chapter..."
                   : latestChapter
@@ -122,7 +124,7 @@ function TitleDetailDialog({ title, currentUserId, users, onClose }) {
             )}
 
             {title.addedBy && (
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="textSecondary">
                 Added by {getUserName(title.addedBy)}
               </Typography>
             )}

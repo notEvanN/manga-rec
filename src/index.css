@@ -1,0 +1,81 @@
+/*
+ * Colour tokens for the whole app. The MUI theme (src/theme/theme.js) points its palette at these,
+ * so change colours here, not in components.
+ *
+ * MUI sets `data-dark` or `data-light` on <html> when the colour mode changes (see main.jsx).
+ * Dark is the default so the page doesn't flash white before that attribute is set.
+ */
+:root,
+:root[data-dark] {
+  color-scheme: dark;
+
+  --bg: #0c0c0e;
+  --panel: #151517;
+  --panel-raised: #202024;
+  --border: #26262b;
+  --text: #ececf1;
+  --text-muted: #9c9ca6;
+
+  --accent: #8ab4ff;
+  --on-accent: #0b1730; /* text on accent-filled buttons */
+  --accent-soft: rgb(138 180 255 / 0.14);
+
+  --danger: #d32f2f;
+  --on-danger: #ffffff;
+
+  /* Read status chips: text colour + background */
+  --status-reading: #6ad6a8;
+  --status-reading-bg: rgb(106 214 168 / 0.12);
+  --status-completed: #b9a2ff;
+  --status-completed-bg: rgb(185 162 255 / 0.14);
+  --status-dropped: #ff8f8f;
+  --status-dropped-bg: rgb(255 143 143 / 0.12);
+  --status-plan: #8ab4ff;
+  --status-plan-bg: rgb(138 180 255 / 0.14);
+
+  /* Cover placeholders and avatars cycle through these */
+  --tint-1: #2c4a7c;
+  --tint-2: #4a3a7a;
+  --tint-3: #1f5a64;
+  --tint-4: #5a3a6e;
+  --avatar-1: #6ad6b4;
+  --avatar-2: #8ab4ff;
+  --avatar-3: #f5a3a3;
+  --avatar-4: #c3a6ff;
+  --on-avatar: #0c0c0e;
+}
+
+:root[data-light] {
+  color-scheme: light;
+
+  --bg: #f4f5f8;
+  --panel: #ffffff;
+  --panel-raised: #eceff5;
+  --border: #e1e4ea;
+  --text: #16181d;
+  --text-muted: #5c6370;
+
+  /* #8AB4FF is too faint for text on white, so light mode uses a deeper blue */
+  --accent: #2f66d8;
+  --on-accent: #ffffff;
+  --accent-soft: rgb(47 102 216 / 0.1);
+
+  --status-reading: #137a52;
+  --status-reading-bg: rgb(19 122 82 / 0.1);
+  --status-completed: #6a45d6;
+  --status-completed-bg: rgb(106 69 214 / 0.1);
+  --status-dropped: #c23434;
+  --status-dropped-bg: rgb(194 52 52 / 0.1);
+  --status-plan: #2f66d8;
+  --status-plan-bg: rgb(47 102 216 / 0.1);
+
+  --tint-1: #5a7bb5;
+  --tint-2: #7462a8;
+  --tint-3: #3f8590;
+  --tint-4: #8a6199;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}

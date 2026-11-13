@@ -8,9 +8,11 @@
  * @module
  */
 
+import type * as activity from "../activity.js";
 import type * as admin from "../admin.js";
 import type * as covers from "../covers.js";
 import type * as http from "../http.js";
+import type * as lib_activity from "../lib/activity.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_validators from "../lib/validators.js";
 import type * as mangadex from "../mangadex.js";
@@ -26,9 +28,11 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  activity: typeof activity;
   admin: typeof admin;
   covers: typeof covers;
   http: typeof http;
+  "lib/activity": typeof lib_activity;
   "lib/auth": typeof lib_auth;
   "lib/validators": typeof lib_validators;
   mangadex: typeof mangadex;

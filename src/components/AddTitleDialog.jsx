@@ -82,7 +82,7 @@ function AddTitleDialog({ title, isSignedIn, onClose }) {
           />
 
           <Box>
-            <Typography variant="body2" color="text.secondary" component="legend">
+            <Typography variant="body2" color="textSecondary" component="legend">
               Your rating (optional)
             </Typography>
             <Rating

@@ -39,4 +39,14 @@ export default defineSchema({
     .index("by_title", ["titleId"])
     .index("by_user", ["userId"])
     .index("by_user_and_title", ["userId", "titleId"]),
+
+  // Feed for the "Recent activity" panel. One row per add / rating / status change, written by the
+  // mutations that make those changes (see lib/activity.ts). Newest first via _creationTime.
+  activity: defineTable({
+    userId: v.id("users"),
+    titleId: v.id("titles"),
+    kind: v.union(v.literal("added"), v.literal("rated"), v.literal("status")),
+    score: v.optional(v.number()),
+    status: v.optional(readStatusValidator),
+  }).index("by_user", ["userId"]),
 });

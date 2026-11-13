@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { requireUser } from "./lib/auth";
+import { logActivity } from "./lib/activity";
 import { validateScore } from "./lib/validators";
 
 export const forTitle = query({
@@ -32,6 +33,10 @@ export const rate = mutation({
       await ctx.db.patch(existing._id, { score, comment });
     } else {
       await ctx.db.insert("ratings", { userId: user._id, titleId, score, comment });
+    }
+    // Comment-only edits (same score) don't go in the feed.
+    if (existing?.score !== score) {
+      await logActivity(ctx, { userId: user._id, titleId, kind: "rated", score });
     }
   },
 });

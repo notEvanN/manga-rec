@@ -67,6 +67,12 @@ export const mergeUsers = internalMutation({
       .collect();
     for (const t of addedTitles) await ctx.db.patch(t._id, { addedBy: newUserId });
 
+    const oldActivity = await ctx.db
+      .query("activity")
+      .withIndex("by_user", (q) => q.eq("userId", oldUserId))
+      .collect();
+    for (const a of oldActivity) await ctx.db.patch(a._id, { userId: newUserId });
+
     await ctx.db.delete(oldUserId);
 
     return {

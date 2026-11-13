@@ -66,6 +66,12 @@ export const deleteByClerkId = internalMutation({
       .collect();
     for (const s of statuses) await ctx.db.delete(s._id);
 
+    const activity = await ctx.db
+      .query("activity")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+    for (const a of activity) await ctx.db.delete(a._id);
+
     // Keep titles the user added (other people may have rated them), just unlink them.
     const titles = await ctx.db
       .query("titles")
