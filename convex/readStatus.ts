@@ -2,6 +2,7 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { readStatusValidator } from "./lib/validators";
 import { getCurrentUser, requireUser } from "./lib/auth";
+import { logActivity } from "./lib/activity";
 
 export const forTitle = query({
   args: { titleId: v.id("titles") },
@@ -40,10 +41,13 @@ export const setStatus = mutation({
       .withIndex("by_user_and_title", (q) => q.eq("userId", user._id).eq("titleId", titleId))
       .unique();
 
+    if (existing?.status === status) return;
+
     if (existing) {
       await ctx.db.patch(existing._id, { status });
     } else {
       await ctx.db.insert("readStatus", { userId: user._id, titleId, status });
     }
+    await logActivity(ctx, { userId: user._id, titleId, kind: "status", status });
   },
 });

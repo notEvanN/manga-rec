@@ -2,6 +2,7 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { requireUser } from "./lib/auth";
+import { logActivity } from "./lib/activity";
 import { readStatusValidator, validateScore, MANGADEX_COVER_PREFIX } from "./lib/validators";
 
 // All titles, newest first, with their average rating. Sorting by rating is done client-side.
@@ -75,6 +76,7 @@ export const addWithMetadata = mutation({
     if (status !== undefined) {
       await ctx.db.insert("readStatus", { userId: user._id, titleId, status });
     }
+    await logActivity(ctx, { userId: user._id, titleId, kind: "added", score, status });
 
     return titleId;
   },

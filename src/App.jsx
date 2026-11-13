@@ -1,25 +1,29 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { useUser } from "@clerk/clerk-react";
-import { Box, Container, MenuItem, Skeleton, Stack, TextField, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { api } from "../convex/_generated/api";
-import Header from "./components/Header";
-import TitleSearch from "./components/TitleSearch";
-import TitleCard from "./components/TitleCard";
+import Sidebar from "./components/Sidebar";
+import Hero from "./components/Hero";
+import MostRated from "./components/MostRated";
+import AllTitles from "./components/AllTitles";
+import RecentActivity from "./components/RecentActivity";
 import AddTitleDialog from "./components/AddTitleDialog";
 import TitleDetailDialog from "./components/TitleDetailDialog";
-import { STATUS_OPTIONS } from "./lib/constants";
 
-const SORTERS = {
-  newest: null, // server already returns newest first
-  rating: (a, b) => (b.avgRating ?? -1) - (a.avgRating ?? -1),
-  mostRated: (a, b) => b.ratingCount - a.ratingCount || (b.avgRating ?? -1) - (a.avgRating ?? -1),
-};
-
-const gridSx = {
+// Hero across the top; carousel and titles on the left, activity on the right.
+// On narrow screens everything stacks, with activity between the carousel and the titles.
+const pageGridSx = {
+  maxWidth: 1480,
+  mx: "auto",
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(min(220px, 100%), 1fr))",
-  gap: 2,
+  gap: { xs: 3, md: 4 },
+  gridTemplateColumns: { xs: "minmax(0, 1fr)", lg: "minmax(0, 1fr) 360px" },
+  gridTemplateRows: { lg: "auto auto 1fr" },
+  gridTemplateAreas: {
+    xs: `"hero" "rated" "activity" "titles"`,
+    lg: `"hero hero" "rated activity" "titles activity"`,
+  },
 };
 
 function App() {
@@ -27,6 +31,7 @@ function App() {
   const me = useQuery(api.users.me);
   const users = useQuery(api.users.list);
   const allTitles = useQuery(api.titles.list);
+  const activity = useQuery(api.activity.recent);
   const ensureUser = useMutation(api.users.ensure);
 
   const currentUserId = me?._id ?? "";
@@ -41,27 +46,6 @@ function App() {
     );
   }, [isSignedIn, user, ensureUser]);
 
-  // sorting + filtering
-  const [sortMode, setSortMode] = useState("newest");
-  const [statusFilter, setStatusFilter] = useState("");
-  const activeStatusFilter = currentUserId ? statusFilter : "";
-  const myStatuses = useQuery(api.readStatus.mine, activeStatusFilter ? {} : "skip");
-
-  const titles = useMemo(() => {
-    if (!allTitles) return undefined;
-
-    let result = allTitles;
-    if (activeStatusFilter && myStatuses) {
-      const ids = new Set(
-        myStatuses.filter((s) => s.status === activeStatusFilter).map((s) => s.titleId),
-      );
-      result = result.filter((t) => ids.has(t._id));
-    }
-
-    const sorter = SORTERS[sortMode];
-    return sorter ? [...result].sort(sorter) : result;
-  }, [allTitles, sortMode, activeStatusFilter, myStatuses]);
-
   // dialogs: store the id so the detail dialog always shows live data
   const [pendingTitle, setPendingTitle] = useState(null);
   const [selectedTitleId, setSelectedTitleId] = useState(null);
@@ -69,73 +53,33 @@ function App() {
 
   return (
     <>
-      <Header userName={me?.name} />
+      <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, minHeight: "100vh" }}>
+        <Sidebar userName={me?.name} />
 
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <TitleSearch onPick={setPendingTitle} />
+        <Box component="main" id="top" sx={{ flex: 1, minWidth: 0, p: { xs: 2, sm: 3, md: 4 } }}>
+          <Box sx={pageGridSx}>
+            <Box sx={{ gridArea: "hero" }}>
+              <Hero onPick={setPendingTitle} />
+            </Box>
 
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={2}
-          sx={{ justifyContent: "space-between", alignItems: { sm: "center" }, mt: 5, mb: 2 }}
-        >
-          <Typography variant="h2" component="h2">
-            Titles
-          </Typography>
+            <Box sx={{ gridArea: "rated", minWidth: 0 }}>
+              <MostRated titles={allTitles} onOpen={setSelectedTitleId} />
+            </Box>
 
-          <Stack direction="row" spacing={1.5}>
-            <TextField
-              select
-              label="Sort by"
-              value={sortMode}
-              onChange={(e) => setSortMode(e.target.value)}
-              sx={{ minWidth: 160 }}
-            >
-              <MenuItem value="newest">Newest</MenuItem>
-              <MenuItem value="rating">Highest rated</MenuItem>
-              <MenuItem value="mostRated">Most rated</MenuItem>
-            </TextField>
+            <Box sx={{ gridArea: "activity", minWidth: 0, alignSelf: "start" }}>
+              <RecentActivity items={activity} />
+            </Box>
 
-            <TextField
-              select
-              label="My status"
-              value={activeStatusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              disabled={!currentUserId}
-              helperText={currentUserId ? undefined : "Sign in to filter"}
-              slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
-              sx={{ minWidth: 160 }}
-            >
-              <MenuItem value="">All</MenuItem>
-              {STATUS_OPTIONS.map(({ value, label }) => (
-                <MenuItem key={value} value={value}>
-                  {label}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Stack>
-        </Stack>
-
-        {titles === undefined ? (
-          <Box sx={gridSx}>
-            {Array.from({ length: 8 }, (_, i) => (
-              <Skeleton key={i} variant="rounded" height={380} />
-            ))}
+            <Box sx={{ gridArea: "titles", minWidth: 0 }}>
+              <AllTitles
+                titles={allTitles}
+                signedIn={Boolean(currentUserId)}
+                onOpen={setSelectedTitleId}
+              />
+            </Box>
           </Box>
-        ) : titles.length === 0 ? (
-          <Typography color="text.secondary" sx={{ textAlign: "center", py: 8 }}>
-            {activeStatusFilter
-              ? "No titles with that status yet."
-              : "No titles yet. Search MangaDex above to add the first one."}
-          </Typography>
-        ) : (
-          <Box sx={gridSx}>
-            {titles.map((title) => (
-              <TitleCard key={title._id} title={title} onOpen={setSelectedTitleId} />
-            ))}
-          </Box>
-        )}
-      </Container>
+        </Box>
+      </Box>
 
       {pendingTitle && (
         <AddTitleDialog
