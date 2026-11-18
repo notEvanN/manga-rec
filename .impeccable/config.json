@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "h3.fontfamily",
+        "createdAt": "2026-11-18T08:53:52.135Z",
+        "reason": "Assessment B in critique 2026-11-18: MUI theme path h3.fontFamily resolves to Space Grotesk, declared in DESIGN.md"
+      }
+    ]
+  }
+}

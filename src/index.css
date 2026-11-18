@@ -38,6 +38,12 @@
   --tint-2: #4a3a7a;
   --tint-3: #1f5a64;
   --tint-4: #5a3a6e;
+  --on-tint: #ffffff; /* placeholder title text on a tint */
+
+  /* Rank badge on covers: dark scrim that reads over any cover art, in both modes */
+  --scrim: rgb(0 0 0 / 0.72);
+  --on-scrim: #ffffff;
+
   --avatar-1: #6ad6b4;
   --avatar-2: #8ab4ff;
   --avatar-3: #f5a3a3;
@@ -69,9 +75,10 @@
   --status-plan: #2f66d8;
   --status-plan-bg: rgb(47 102 216 / 0.1);
 
-  --tint-1: #5a7bb5;
+  /* Light tints stay dark enough for white placeholder text (≥4.5:1) */
+  --tint-1: #4f70ab;
   --tint-2: #7462a8;
-  --tint-3: #3f8590;
+  --tint-3: #367a85;
   --tint-4: #8a6199;
 }
 

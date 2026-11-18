@@ -45,7 +45,9 @@ function localized(map: LocalizedString | undefined) {
 
 export const search = action({
   args: { query: v.string() },
-  handler: async (_ctx, { query }) => {
+  handler: async (ctx, { query }) => {
+    // Signed-in only, so a script can't burn the shared MangaDex rate limit.
+    if (!(await ctx.auth.getUserIdentity())) throw new Error("Sign in to search MangaDex.");
     const results = await fetchMangaDex<MangaDexManga>(
       `/manga?title=${encodeURIComponent(query)}&limit=20&includes[]=cover_art`,
     );

@@ -1,6 +1,7 @@
 import { Box, ButtonBase, Stack, Typography } from "@mui/material";
 import StarIcon from "@mui/icons-material/Star";
 import { hoverLift } from "../theme/theme";
+import { SLOP_EXPLAINER } from "../lib/constants";
 import CoverPlaceholder from "./CoverPlaceholder";
 
 const badgeSx = {
@@ -38,12 +39,15 @@ function Cover({ title, rank }) {
       )}
 
       {rank != null && (
-        <Box sx={{ ...badgeSx, left: 10, bgcolor: "rgb(0 0 0 / 0.72)", color: "#fff" }}>
+        <Box sx={{ ...badgeSx, left: 10, bgcolor: "var(--scrim)", color: "var(--on-scrim)" }}>
           #{rank}
         </Box>
       )}
       {title.slop && (
-        <Box sx={{ ...badgeSx, right: 10, bgcolor: "error.main", color: "error.contrastText" }}>
+        <Box
+          title={SLOP_EXPLAINER}
+          sx={{ ...badgeSx, right: 10, bgcolor: "error.main", color: "error.contrastText" }}
+        >
           Slop
         </Box>
       )}
@@ -51,7 +55,7 @@ function Cover({ title, rank }) {
   );
 }
 
-export function RatingLine({ avgRating, ratingCount }) {
+function RatingLine({ avgRating, ratingCount }) {
   if (avgRating == null) {
     return (
       <Typography variant="body2" color="textSecondary">
@@ -95,7 +99,11 @@ function TitleCard({ title, onOpen, rank }) {
       <Cover title={title} rank={rank} />
 
       <Box sx={{ pt: 1.25, minWidth: 0 }}>
-        <Typography sx={{ fontWeight: 600, fontSize: "1.0625rem", mb: 0.5 }} noWrap>
+        <Typography
+          title={title.name}
+          sx={{ fontWeight: 600, fontSize: "1.0625rem", mb: 0.5 }}
+          noWrap
+        >
           {title.name}
         </Typography>
         <RatingLine avgRating={title.avgRating} ratingCount={title.ratingCount} />

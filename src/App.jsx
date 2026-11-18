@@ -40,8 +40,7 @@ function App() {
   useEffect(() => {
     if (!isSignedIn || !user) return;
     const name = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username;
-    const email = user.primaryEmailAddress?.emailAddress;
-    ensureUser({ name: name || undefined, email }).catch((err) =>
+    ensureUser({ name: name || undefined }).catch((err) =>
       console.error("Failed to create user record:", err),
     );
   }, [isSignedIn, user, ensureUser]);
@@ -59,7 +58,7 @@ function App() {
         <Box component="main" id="top" sx={{ flex: 1, minWidth: 0, p: { xs: 2, sm: 3, md: 4 } }}>
           <Box sx={pageGridSx}>
             <Box sx={{ gridArea: "hero" }}>
-              <Hero onPick={setPendingTitle} />
+              <Hero titles={allTitles} onOpen={setSelectedTitleId} onPick={setPendingTitle} />
             </Box>
 
             <Box sx={{ gridArea: "rated", minWidth: 0 }}>
@@ -67,7 +66,7 @@ function App() {
             </Box>
 
             <Box sx={{ gridArea: "activity", minWidth: 0, alignSelf: "start" }}>
-              <RecentActivity items={activity} />
+              <RecentActivity items={activity} onOpen={setSelectedTitleId} />
             </Box>
 
             <Box sx={{ gridArea: "titles", minWidth: 0 }}>
@@ -87,6 +86,7 @@ function App() {
           title={pendingTitle}
           isSignedIn={Boolean(currentUserId)}
           onClose={() => setPendingTitle(null)}
+          onOpen={setSelectedTitleId}
         />
       )}
 

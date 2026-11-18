@@ -10,9 +10,12 @@ function tintFor(name) {
 }
 
 // Shown while a cover is still downloading, or when a title has none. Fills its parent.
-function CoverPlaceholder({ name }) {
+// aria-hidden: the title's name is always written next to the cover, so this would repeat it.
+// `showName={false}` for thumbnails too small for readable text: just the tint.
+function CoverPlaceholder({ name, showName = true }) {
   return (
     <Box
+      aria-hidden
       sx={{
         position: "absolute",
         inset: 0,
@@ -20,14 +23,15 @@ function CoverPlaceholder({ name }) {
         alignItems: "flex-end",
         p: 1.75,
         bgcolor: tintFor(name),
-        color: "#fff",
+        color: "var(--on-tint)",
         fontFamily: "h3.fontFamily",
         fontWeight: 700,
         fontSize: "1.0625rem",
         lineHeight: 1.25,
+        overflowWrap: "anywhere",
       }}
     >
-      {name}
+      {showName && name}
     </Box>
   );
 }

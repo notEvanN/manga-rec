@@ -1,4 +1,4 @@
-import { Box, Button, IconButton, Stack, Typography } from "@mui/material";
+import { Box, Button, IconButton, Skeleton, Stack, Typography } from "@mui/material";
 import { useColorScheme } from "@mui/material/styles";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import GridViewOutlinedIcon from "@mui/icons-material/GridViewOutlined";
@@ -29,7 +29,25 @@ const navItemSx = {
   "& .MuiSvgIcon-root": { fontSize: 22 },
   "&:hover": { bgcolor: "var(--panel-raised)" },
   "&[aria-current='page']": { bgcolor: "var(--panel-raised)", color: "primary.main" },
-  "&.Mui-disabled": { color: "text.secondary", opacity: 0.6 },
+};
+
+const soonItemSx = {
+  display: "flex",
+  alignItems: "center",
+  minHeight: 44,
+  color: "text.secondary",
+  cursor: "default",
+  "&:hover": {},
+};
+
+const soonTagSx = {
+  ml: { md: "auto" },
+  px: 0.75,
+  borderRadius: "6px",
+  border: "1px solid var(--border)",
+  fontSize: "0.8125rem",
+  fontWeight: 600,
+  lineHeight: 1.6,
 };
 
 function Logo() {
@@ -121,10 +139,10 @@ function Account({ userName }) {
       <UserButton appearance={{ elements: { avatarBox: { width: 40, height: 40 } } }} />
       <Box sx={{ minWidth: 0, display: { xs: "none", sm: "block" } }}>
         <Typography sx={{ fontWeight: 600, lineHeight: 1.3 }} noWrap>
-          {userName ?? "…"}
+          {userName ?? <Skeleton width={96} />}
         </Typography>
         <Typography variant="body2" color="textSecondary">
-          Signed in
+          Your account
         </Typography>
       </Box>
     </Stack>
@@ -172,19 +190,28 @@ function Sidebar({ userName }) {
           "& > *": { flexShrink: 0 },
         }}
       >
-        {NAV_ITEMS.map(({ label, href, icon: Icon, current, comingSoon }) => (
-          <Button
-            key={label}
-            href={href}
-            disabled={comingSoon}
-            aria-current={current ? "page" : undefined}
-            title={comingSoon ? "Coming soon" : undefined}
-            startIcon={<Icon />}
-            sx={navItemSx}
-          >
-            {label}
-          </Button>
-        ))}
+        {NAV_ITEMS.map(({ label, href, icon: Icon, current, comingSoon }) =>
+          comingSoon ? (
+            // Not a link yet: say so in the item itself (a tooltip on a disabled button never shows).
+            <Box key={label} aria-disabled="true" sx={{ ...navItemSx, ...soonItemSx }}>
+              <Icon />
+              {label}
+              <Box component="span" sx={soonTagSx}>
+                Soon
+              </Box>
+            </Box>
+          ) : (
+            <Button
+              key={label}
+              href={href}
+              aria-current={current ? "page" : undefined}
+              startIcon={<Icon />}
+              sx={navItemSx}
+            >
+              {label}
+            </Button>
+          ),
+        )}
       </Box>
 
       <Box

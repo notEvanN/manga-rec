@@ -1,0 +1,335 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-18T08:59:27.178Z",
+  "title": "Design System: MangaRec",
+  "extensions": {
+    "colorMeta": {
+      "shelf-tag-blue": {
+        "role": "primary",
+        "displayName": "Shelf-Tag Blue",
+        "canonical": "#8ab4ff",
+        "tonalRamp": [
+          "oklch(18% 0.04 264)",
+          "oklch(28% 0.07 264)",
+          "oklch(38% 0.10 264)",
+          "oklch(48% 0.13 264)",
+          "oklch(58% 0.14 264)",
+          "oklch(68% 0.13 264)",
+          "oklch(78% 0.10 264)",
+          "oklch(94% 0.03 264)"
+        ]
+      },
+      "slop-red": {
+        "role": "secondary",
+        "displayName": "Slop Red",
+        "canonical": "#d32f2f",
+        "tonalRamp": [
+          "oklch(18% 0.05 27)",
+          "oklch(28% 0.09 27)",
+          "oklch(38% 0.14 27)",
+          "oklch(48% 0.18 27)",
+          "oklch(57% 0.19 27)",
+          "oklch(67% 0.15 27)",
+          "oklch(80% 0.09 27)",
+          "oklch(95% 0.02 27)"
+        ]
+      },
+      "status-reading": {
+        "role": "tertiary",
+        "displayName": "Reading Mint",
+        "canonical": "#6ad6a8",
+        "tonalRamp": [
+          "oklch(18% 0.03 165)",
+          "oklch(28% 0.05 165)",
+          "oklch(38% 0.07 165)",
+          "oklch(48% 0.09 165)",
+          "oklch(60% 0.11 165)",
+          "oklch(70% 0.12 165)",
+          "oklch(81% 0.11 165)",
+          "oklch(95% 0.03 165)"
+        ]
+      },
+      "status-completed": {
+        "role": "tertiary",
+        "displayName": "Completed Lilac",
+        "canonical": "#b9a2ff",
+        "tonalRamp": [
+          "oklch(18% 0.04 295)",
+          "oklch(28% 0.08 295)",
+          "oklch(38% 0.12 295)",
+          "oklch(48% 0.16 295)",
+          "oklch(58% 0.17 295)",
+          "oklch(68% 0.15 295)",
+          "oklch(77% 0.12 295)",
+          "oklch(95% 0.03 295)"
+        ]
+      },
+      "status-dropped": {
+        "role": "tertiary",
+        "displayName": "Dropped Coral",
+        "canonical": "#ff8f8f",
+        "tonalRamp": [
+          "oklch(18% 0.04 22)",
+          "oklch(28% 0.07 22)",
+          "oklch(38% 0.11 22)",
+          "oklch(48% 0.15 22)",
+          "oklch(58% 0.17 22)",
+          "oklch(68% 0.16 22)",
+          "oklch(77% 0.13 22)",
+          "oklch(95% 0.03 22)"
+        ]
+      },
+      "page-ink": {
+        "role": "neutral",
+        "displayName": "Page Ink",
+        "canonical": "#0c0c0e",
+        "tonalRamp": [
+          "oklch(15% 0.004 285)",
+          "oklch(19% 0.004 285)",
+          "oklch(24% 0.006 285)",
+          "oklch(27% 0.008 285)",
+          "oklch(45% 0.010 285)",
+          "oklch(70% 0.014 285)",
+          "oklch(88% 0.008 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "panel-charcoal": {
+        "role": "neutral",
+        "displayName": "Panel Charcoal",
+        "canonical": "#151517"
+      },
+      "raised-graphite": {
+        "role": "neutral",
+        "displayName": "Raised Graphite",
+        "canonical": "#202024"
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#26262b"
+      },
+      "paper-white-text": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "canonical": "#ececf1"
+      },
+      "muted-slate-text": {
+        "role": "neutral",
+        "displayName": "Muted Slate",
+        "canonical": "#9c9ca6"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The hero prompt only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Panel headings."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Sub-headings, the wordmark and cover placeholder names."
+      },
+      "card-title": {
+        "displayName": "Card title",
+        "purpose": "Manga names under covers, one line."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Activity sentences and descriptions."
+      },
+      "body-small": {
+        "displayName": "Body small",
+        "purpose": "Rating counts, genres, timestamps, empty states."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons, sentence case."
+      },
+      "badge": {
+        "displayName": "Badge",
+        "purpose": "Rank and Slop badges on covers."
+      }
+    },
+    "shadows": [
+      {
+        "name": "dropdown",
+        "value": "MUI elevation 8",
+        "purpose": "Search results dropdown, the only floating layer on the page."
+      },
+      {
+        "name": "dialog",
+        "value": "MUI elevation 24",
+        "purpose": "Add title and title detail dialogs."
+      }
+    ],
+    "motion": [
+      {
+        "name": "hover-lift",
+        "value": "transform 150ms ease; translateY(-3px)",
+        "purpose": "Title cards on hover. Disabled under prefers-reduced-motion."
+      },
+      {
+        "name": "carousel-page",
+        "value": "scrollBy 80% of width, behavior: smooth",
+        "purpose": "Carousel arrows. Instant under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "600px"
+      },
+      {
+        "name": "md",
+        "value": "900px"
+      },
+      {
+        "name": "lg",
+        "value": "1200px"
+      },
+      {
+        "name": "xl",
+        "value": "1536px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary-large",
+      "description": "The one primary action, e.g. Add manga next to search.",
+      "html": "<button class=\"ds-btn-primary\">Search</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: var(--on-accent); border: none; border-radius: 10px; padding: 8px 24px; min-height: 56px; font: 600 0.9375rem/1.75 Inter, system-ui, sans-serif; cursor: pointer; transition: background 150ms ease; } .ds-btn-primary:hover { background: color-mix(in oklch, var(--accent), #000 12%); } .ds-btn-primary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }"
+    },
+    {
+      "name": "Score Picker",
+      "kind": "custom",
+      "refersTo": "score-button-selected",
+      "description": "How people rate: 1-10 as separate 44px buttons with a big readout; tap the selected number or Clear to remove.",
+      "html": "<div class=\"ds-score\"><div class=\"ds-score-head\"><h3 id=\"ds-score-l\">Your rating</h3><span class=\"ds-score-out\">9<small>/10</small></span></div><div class=\"ds-score-row\" role=\"group\" aria-labelledby=\"ds-score-l\"><button aria-pressed=\"false\" aria-label=\"1 out of 10\">1</button><button aria-pressed=\"false\" aria-label=\"2 out of 10\">2</button><button aria-pressed=\"false\" aria-label=\"3 out of 10\">3</button><button aria-pressed=\"false\" aria-label=\"4 out of 10\">4</button><button aria-pressed=\"false\" aria-label=\"5 out of 10\">5</button><button aria-pressed=\"false\" aria-label=\"6 out of 10\">6</button><button aria-pressed=\"false\" aria-label=\"7 out of 10\">7</button><button aria-pressed=\"false\" aria-label=\"8 out of 10\">8</button><button aria-pressed=\"true\" aria-label=\"9 out of 10\">9</button><button aria-pressed=\"false\" aria-label=\"10 out of 10\">10</button></div></div>",
+      "css": ".ds-score { max-width: 560px; font-family: Inter, system-ui, sans-serif; color: var(--text); } .ds-score-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; } .ds-score-head h3 { margin: 0; font-size: 0.875rem; font-weight: 500; } .ds-score-out { font: 700 1.5rem/1 'Space Grotesk', Inter, sans-serif; font-variant-numeric: tabular-nums; } .ds-score-out small { font-size: 1rem; color: var(--text-muted); } .ds-score-row { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; } .ds-score-row button { min-height: 44px; border: 1px solid var(--border); border-radius: 10px; background: transparent; color: var(--text); font: 600 1rem/1 Inter, sans-serif; font-variant-numeric: tabular-nums; cursor: pointer; transition: background-color 120ms ease-out, border-color 120ms ease-out; } .ds-score-row button:hover { background: var(--panel-raised); } .ds-score-row button[aria-pressed=true] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); } .ds-score-row button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; } @media (max-width: 599px) { .ds-score-row { grid-template-columns: repeat(5, 1fr); } }"
+    },
+    {
+      "name": "Outlined Button",
+      "kind": "button",
+      "refersTo": "button-outlined",
+      "description": "Secondary actions such as Create account and the theme toggle.",
+      "html": "<button class=\"ds-btn-outlined\">Create account</button>",
+      "css": ".ds-btn-outlined { background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 8px 16px; font: 500 0.875rem/1.75 Inter, system-ui, sans-serif; cursor: pointer; transition: background 150ms ease; } .ds-btn-outlined:hover { background: var(--panel-raised); } .ds-btn-outlined:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "MangaDex search, inset one tone below its panel.",
+      "html": "<input class=\"ds-input-search\" type=\"search\" placeholder=\"Search MangaDex by title\" aria-label=\"Search MangaDex by title\">",
+      "css": ".ds-input-search { width: 100%; max-width: 420px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 14px; font: 400 1rem/1.4 Inter, system-ui, sans-serif; } .ds-input-search::placeholder { color: var(--text-muted); } .ds-input-search:hover { border-color: var(--text-muted); } .ds-input-search:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }"
+    },
+    {
+      "name": "Sidebar Navigation",
+      "kind": "nav",
+      "refersTo": "nav-item-active",
+      "description": "Sidebar nav items; the current page gets the raised fill and accent text.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Main\"><a class=\"ds-nav-item\" href=\"#\" aria-current=\"page\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"m12 5.69 5 4.5V18h-2v-6H9v6H7v-7.81zM12 3 2 12h3v8h6v-6h2v6h6v-8h3z\"/></svg>Home</a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M3 3v8h8V3zm6 6H5V5h4zm-6 4v8h8v-8zm6 6H5v-4h4zm4-16v8h8V3zm6 6h-4V5h4zm-6 4v8h8v-8zm6 6h-4v-4h4z\"/></svg>All titles</a></nav>",
+      "css": ".ds-nav { display: flex; flex-direction: column; gap: 4px; width: 240px; } .ds-nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 10px; color: var(--text); text-decoration: none; font: 500 1rem/1.75 Inter, system-ui, sans-serif; transition: background 150ms ease; } .ds-nav-item:hover { background: var(--panel-raised); } .ds-nav-item[aria-current='page'] { background: var(--panel-raised); color: var(--accent); } .ds-nav-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }"
+    },
+    {
+      "name": "Filter Pills",
+      "kind": "chip",
+      "refersTo": "pill-filter-selected",
+      "description": "Sort and status filters above the All titles grid.",
+      "html": "<div class=\"ds-pills\" role=\"group\" aria-label=\"Sort\"><button class=\"ds-pill\" aria-pressed=\"true\">Newest</button><button class=\"ds-pill\" aria-pressed=\"false\">Highest rated</button><button class=\"ds-pill\" aria-pressed=\"false\">Most rated</button></div>",
+      "css": ".ds-pills { display: flex; flex-wrap: wrap; gap: 8px; } .ds-pill { background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 999px; min-height: 44px; padding: 0 16px; font: 500 0.875rem/1.5 Inter, system-ui, sans-serif; cursor: pointer; transition: background 150ms ease, border-color 150ms ease; } .ds-pill:hover { background: var(--panel-raised); } .ds-pill[aria-pressed='true'] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); } .ds-pill:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }"
+    },
+    {
+      "name": "Title Card",
+      "kind": "card",
+      "refersTo": "title-cover",
+      "description": "Signature component: a 2:3 cover with rank and Slop badges, name, rating line and genres.",
+      "html": "<div class=\"ds-title-card\" role=\"button\" tabindex=\"0\"><div class=\"ds-cover\"><span class=\"ds-cover-name\">Golden Kamuy</span><span class=\"ds-badge ds-badge-rank\">#1</span><span class=\"ds-badge ds-badge-slop\">Slop</span></div><div class=\"ds-card-name\">Golden Kamuy</div><div class=\"ds-rating\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z\"/></svg><b>8.4</b><span>· 5 ratings</span></div><div class=\"ds-genres\">Action, Historical</div></div>",
+      "css": ".ds-title-card { width: 200px; border-radius: 12px; cursor: pointer; transition: transform 150ms ease; font-family: Inter, system-ui, sans-serif; color: var(--text); } .ds-title-card:hover { transform: translateY(-3px); } .ds-title-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; } @media (prefers-reduced-motion: reduce) { .ds-title-card, .ds-title-card:hover { transition: none; transform: none; } } .ds-cover { position: relative; aspect-ratio: 2 / 3; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: var(--tint-1); display: flex; align-items: flex-end; padding: 14px; } .ds-cover-name { color: var(--on-tint); font: 700 1.0625rem/1.25 'Space Grotesk', Inter, sans-serif; } .ds-badge { position: absolute; top: 10px; padding: 2px 7px; border-radius: 6px; font: 700 0.8125rem/1.6 Inter, sans-serif; } .ds-badge-rank { left: 10px; background: var(--scrim); color: var(--on-scrim); } .ds-badge-slop { right: 10px; background: var(--danger); color: var(--on-danger); } .ds-card-name { padding-top: 10px; margin-bottom: 4px; font-weight: 600; font-size: 1.0625rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ds-rating { display: flex; align-items: center; gap: 6px; font-size: 0.875rem; } .ds-rating svg { color: var(--accent); } .ds-rating span, .ds-genres { color: var(--text-muted); } .ds-genres { margin-top: 4px; font-size: 0.875rem; }"
+    },
+    {
+      "name": "Activity Row",
+      "kind": "custom",
+      "refersTo": "avatar",
+      "description": "One Recent activity entry: tinted initial avatar, sentence, score, status chip, time.",
+      "html": "<div class=\"ds-activity\"><span class=\"ds-avatar\" aria-hidden=\"true\">E</span><div><p class=\"ds-activity-text\"><b>Evan</b> <span>rated</span> <b>Golden Kamuy</b></p><div class=\"ds-activity-meta\"><span class=\"ds-score\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z\"/></svg><b>9</b><span> /10</span></span><span class=\"ds-status ds-status-reading\">Reading</span><time>2h ago</time></div></div></div>",
+      "css": ".ds-activity { display: flex; gap: 12px; padding: 16px 0; max-width: 340px; font-family: Inter, system-ui, sans-serif; color: var(--text); } .ds-avatar { width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; background: var(--avatar-2); color: var(--on-avatar); font-weight: 700; } .ds-activity-text { margin: 0; line-height: 1.4; } .ds-activity-text b { font-weight: 600; } .ds-activity-text span { color: var(--text-muted); } .ds-activity-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; font-size: 0.875rem; } .ds-score { display: inline-flex; align-items: center; gap: 4px; } .ds-score svg { color: var(--accent); } .ds-score b { font-weight: 700; } .ds-score span, .ds-activity-meta time { color: var(--text-muted); } .ds-status { padding: 2px 8px; border-radius: 6px; font-weight: 600; } .ds-status-reading { color: var(--status-reading); background: var(--status-reading-bg); }"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "The bordered surface for the hero, carousel, activity and title list.",
+      "html": "<section class=\"ds-panel\"><h2>Most rated by the group</h2><p>Nothing rated yet. Rate a title and it will show up here.</p></section>",
+      "css": ".ds-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; color: var(--text); font-family: Inter, system-ui, sans-serif; max-width: 520px; } .ds-panel h2 { margin: 0 0 12px; font: 700 1.5rem/1.3 'Space Grotesk', Inter, sans-serif; } .ds-panel p { margin: 0; color: var(--text-muted); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Group Shelf",
+    "overview": "MangaRec is a bookshelf a group of friends stocks together. The covers are the books. Everything else is the shelving: dark, even and quiet, there to hold the covers up rather than compete with them. The colour and personality on any screen come from the manga art, plus one soft blue that marks what's selected, rated or active, like a coloured tag clipped to a shelf.\n\nIt feels soft and friendly rather than technical. Corners are generously rounded (10–16px), filters are pills, cards rise a few pixels when you point at them, and people show up as round initials in their own colour. The density is relaxed: panels breathe, cover rows scroll sideways, and the text reads like a group chat (\"Most rated by the group\", \"Found something worth reading?\"), not a report.\n\nDark is the default, and light mode is a full equal. Both come from the same CSS variables, so every rule here applies to both. Scores support the covers. MangaRec is a shelf, not a stats dashboard.",
+    "keyCharacteristics": [
+      "Manga covers (2:3) are the main imagery and the main source of colour.",
+      "One accent, Shelf-Tag Blue, for anything selected, primary or rated.",
+      "Flat, tonal depth: page → panel → raised, separated by 1px hairlines.",
+      "Soft rounded shapes and pill filters, with a small hover lift on cards.",
+      "Space Grotesk for headings, Inter for everything else.",
+      "Dark-first, with a fully supported light mode driven by the same tokens."
+    ],
+    "rules": [
+      {
+        "name": "The One Tag Rule",
+        "body": "Shelf-Tag Blue is the only accent. It marks what's selected, primary or rated, and nothing decorative. If something new needs to stand out, use weight or space, not a second accent.",
+        "section": "colors"
+      },
+      {
+        "name": "The Status-Only Hues Rule",
+        "body": "Mint, lilac, coral and plan blue mean a read status and nothing else. Don't reuse them for categories, charts or decoration.",
+        "section": "colors"
+      },
+      {
+        "name": "The Token-Only Rule",
+        "body": "Colours exist only as variables in src/index.css. Components use palette names (primary.main, divider, textSecondary) or var(--token). There are no exceptions.",
+        "section": "colors"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "Buttons, pills and headings are sentence case (textTransform: none). Nothing in the UI is all-caps.",
+        "section": "typography"
+      },
+      {
+        "name": "The Score Is Bold Rule",
+        "body": "A score is always 700 weight, next to a Shelf-Tag Blue star (\"8.4\", \"9 /10\"). The count or \"/10\" after it is in Muted Slate at a lighter weight.",
+        "section": "typography"
+      },
+      {
+        "name": "The Radius Unit Rule",
+        "body": "Write radii as px strings in sx (\"10px\"). A bare number gets multiplied by the theme's 10px base.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do let covers carry the colour. Keep the chrome around them in the neutral tones.",
+      "Do use Shelf-Tag Blue (primary.main / var(--accent)) for the one primary action and for selected, current or rated states.",
+      "Do separate surfaces with tone and a 1px var(--border) hairline before reaching for a shadow.",
+      "Do keep radii in the established steps (6 / 10 / 12 / 16px, pills at 999px), written as px strings.",
+      "Do check every new token in both [data-dark] and [data-light], and add the light value in src/index.css when the dark one fails on white.",
+      "Do give motion a prefers-reduced-motion fallback, as hoverLift does.",
+      "Do write muted text as color=\"textSecondary\". MUI 9 silently ignores text.secondary on Typography."
+    ],
+    "donts": [
+      "Don't turn the home page into a data dashboard. No charts or stat tiles leading the page. Scores support the covers.",
+      "Don't add a second accent colour, or reuse the status hues for anything except read status.",
+      "Don't hard-code colours in components. Add a token to src/index.css instead.",
+      "Don't uppercase labels or buttons.",
+      "Don't load images from uploads.mangadex.org. Covers come only from the app's own storage.",
+      "Don't write responsive border shorthands like border: { md: 1 }. They reset the colour, so write the full \"1px solid var(--border)\"."
+    ]
+  }
+}
