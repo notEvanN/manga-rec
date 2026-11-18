@@ -40,8 +40,7 @@ function App() {
   useEffect(() => {
     if (!isSignedIn || !user) return;
     const name = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username;
-    const email = user.primaryEmailAddress?.emailAddress;
-    ensureUser({ name: name || undefined, email }).catch((err) =>
+    ensureUser({ name: name || undefined }).catch((err) =>
       console.error("Failed to create user record:", err),
     );
   }, [isSignedIn, user, ensureUser]);

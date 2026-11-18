@@ -20,14 +20,13 @@ export const list = query({
 export const ensure = mutation({
   args: {
     name: v.optional(v.string()),
-    email: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
 
     const name = args.name?.trim() || "Anonymous";
-    const email = args.email;
+    const email = identity.email; // verified by Clerk, never taken from the browser
 
     const existing = await getCurrentUser(ctx);
     if (existing) {

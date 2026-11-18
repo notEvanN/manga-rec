@@ -55,7 +55,7 @@ function Cover({ title, rank }) {
   );
 }
 
-export function RatingLine({ avgRating, ratingCount }) {
+function RatingLine({ avgRating, ratingCount }) {
   if (avgRating == null) {
     return (
       <Typography variant="body2" color="textSecondary">

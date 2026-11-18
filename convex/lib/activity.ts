@@ -45,7 +45,18 @@ export async function retractActivity(
   titleId: Id<"titles">,
   kind: "rated" | "status",
 ) {
-  const recent = await mergeableRow(ctx, userId, titleId);
+  // Not just the newest row: "rate, set status, clear rating" must still find the rating row.
+  const rows = await ctx.db
+    .query("activity")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .order("desc")
+    .take(5);
+  const recent = rows.find(
+    (r) =>
+      r.titleId === titleId &&
+      (r.kind === kind || r.kind === "added") &&
+      Date.now() - r._creationTime <= MERGE_WINDOW_MS,
+  );
   if (!recent) return;
   if (recent.kind === kind) {
     await ctx.db.delete(recent._id);

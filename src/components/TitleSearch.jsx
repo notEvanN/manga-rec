@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useId } from "react";
-import { useAction } from "convex/react";
+import { useAction, useConvexAuth } from "convex/react";
 import {
   Alert,
   Box,
@@ -75,6 +75,7 @@ const groupLabelSx = {
 // "/" anywhere on the page jumps here.
 function TitleSearch({ titles, onOpen, onPick }) {
   const searchMangaDex = useAction(api.mangadex.search);
+  const { isAuthenticated } = useConvexAuth(); // MangaDex search is signed-in only
   const listboxId = useId();
 
   const [query, setQuery] = useState("");
@@ -132,8 +133,9 @@ function TitleSearch({ titles, onOpen, onPick }) {
   ];
   const noMatch = searchedFor && options.length === 0;
   const remaining = MIN_SEARCH_LENGTH - trimmed.length;
-  const hint =
-    trimmed.length > 0 && remaining > 0
+  const hint = !isAuthenticated
+    ? trimmed.length >= MIN_SHELF_LENGTH && "Sign in to search MangaDex and add titles"
+    : trimmed.length > 0 && remaining > 0
       ? `Type ${remaining} more character${remaining === 1 ? "" : "s"} to search MangaDex`
       : "";
   const showDropdown = open && (options.length > 0 || Boolean(error || noMatch || hint));
@@ -176,7 +178,7 @@ function TitleSearch({ titles, onOpen, onPick }) {
     setQuery(text);
     setOpen(true);
     reset();
-    if (text.trim().length < MIN_SEARCH_LENGTH) return;
+    if (!isAuthenticated || text.trim().length < MIN_SEARCH_LENGTH) return;
     debounceTimer.current = setTimeout(() => runSearch(text.trim()), SEARCH_DEBOUNCE_MS);
   };
 
@@ -196,7 +198,7 @@ function TitleSearch({ titles, onOpen, onPick }) {
       choose(options[activeIndex]);
       return;
     }
-    if (trimmed.length < MIN_SEARCH_LENGTH) {
+    if (!isAuthenticated || trimmed.length < MIN_SEARCH_LENGTH) {
       inputRef.current?.focus();
       return;
     }

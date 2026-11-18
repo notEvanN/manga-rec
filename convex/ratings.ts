@@ -30,7 +30,8 @@ export const rate = mutation({
       .unique();
 
     if (existing) {
-      await ctx.db.patch(existing._id, { score, comment });
+      // Patching `comment: undefined` would delete a saved review, so only send it when given.
+      await ctx.db.patch(existing._id, { score, ...(comment !== undefined && { comment }) });
     } else {
       await ctx.db.insert("ratings", { userId: user._id, titleId, score, comment });
     }

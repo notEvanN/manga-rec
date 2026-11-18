@@ -15,7 +15,6 @@ const palette = {
     dark: "color-mix(in oklch, var(--accent), #000 12%)", // hover
     contrastText: "var(--on-accent)",
   },
-  secondary: { main: "var(--accent)", contrastText: "var(--on-accent)" }, // ratings / stars
   error: { main: "var(--danger)", contrastText: "var(--on-danger)" },
   background: { default: "var(--bg)", paper: "var(--panel)" },
   text: { primary: "var(--text)", secondary: "var(--text-muted)" },
