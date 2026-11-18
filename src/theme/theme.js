@@ -35,10 +35,11 @@ export const theme = createTheme({
       fontFamily: headingFont,
       fontSize: "1.875rem",
       fontWeight: 700,
+      lineHeight: 1.3,
       letterSpacing: "-0.01em",
     },
-    h2: { fontFamily: headingFont, fontSize: "1.5rem", fontWeight: 700 },
-    h3: { fontFamily: headingFont, fontSize: "1.25rem", fontWeight: 700 },
+    h2: { fontFamily: headingFont, fontSize: "1.5rem", fontWeight: 700, lineHeight: 1.3 },
+    h3: { fontFamily: headingFont, fontSize: "1.25rem", fontWeight: 700, lineHeight: 1.3 },
     button: { textTransform: "none", fontWeight: 600 },
   },
 
@@ -47,6 +48,12 @@ export const theme = createTheme({
     MuiButton: {
       defaultProps: { disableElevation: true },
       styleOverrides: { root: { minHeight: 44 } },
+    },
+    // One visible keyboard focus ring for every button-like control.
+    MuiButtonBase: {
+      styleOverrides: {
+        root: { "&.Mui-focusVisible": { outline: "2px solid var(--accent)", outlineOffset: 2 } },
+      },
     },
     MuiCard: { defaultProps: { variant: "outlined" } },
     MuiChip: { defaultProps: { size: "small" } },

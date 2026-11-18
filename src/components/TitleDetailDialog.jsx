@@ -20,7 +20,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import StarIcon from "@mui/icons-material/Star";
 import FlagIcon from "@mui/icons-material/Flag";
 import { api } from "../../convex/_generated/api";
-import { SLOP_EXPLAINER, STATUS_LABELS } from "../lib/constants";
+import { slopExplainer, STATUS_LABELS } from "../lib/constants";
 import { friendlyError } from "../lib/errors";
 import { useToast } from "../lib/toast";
 import CoverPlaceholder from "./CoverPlaceholder";
@@ -193,7 +193,18 @@ function TitleDetailDialog({ title, currentUserId, users, onClose }) {
   return (
     <Dialog open onClose={onClose} scroll="paper" fullScreen={fullScreen}>
       <DialogTitle sx={{ pr: 7, lineHeight: 1.3 }}>
-        {title.name}
+        <Box
+          component="span"
+          title={title.name}
+          sx={{
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
+          {title.name}
+        </Box>
         <IconButton
           aria-label="Close"
           onClick={onClose}
@@ -266,7 +277,7 @@ function TitleDetailDialog({ title, currentUserId, users, onClose }) {
 
             <Stack direction="row" useFlexGap spacing={0.5} sx={{ flexWrap: "wrap", pt: 0.5 }}>
               {title.slop && (
-                <Tooltip title={SLOP_EXPLAINER}>
+                <Tooltip title={slopExplainer(addedBy)}>
                   <Chip icon={<FlagIcon />} label="Slop" color="error" tabIndex={0} />
                 </Tooltip>
               )}

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useId } from "react";
 import { useAction, useConvexAuth } from "convex/react";
+import { useClerk } from "@clerk/clerk-react";
 import {
   Alert,
   Box,
@@ -75,7 +76,8 @@ const groupLabelSx = {
 // "/" anywhere on the page jumps here.
 function TitleSearch({ titles, onOpen, onPick }) {
   const searchMangaDex = useAction(api.mangadex.search);
-  const { isAuthenticated } = useConvexAuth(); // MangaDex search is signed-in only
+  const { isAuthenticated } = useConvexAuth();
+  const clerk = useClerk(); // MangaDex search is signed-in only
   const listboxId = useId();
 
   const [query, setQuery] = useState("");
@@ -133,12 +135,14 @@ function TitleSearch({ titles, onOpen, onPick }) {
   ];
   const noMatch = searchedFor && options.length === 0;
   const remaining = MIN_SEARCH_LENGTH - trimmed.length;
+  const guestPrompt = !isAuthenticated && trimmed.length >= MIN_SHELF_LENGTH;
   const hint = !isAuthenticated
-    ? trimmed.length >= MIN_SHELF_LENGTH && "Sign in to search MangaDex and add titles"
+    ? ""
     : trimmed.length > 0 && remaining > 0
       ? `Type ${remaining} more character${remaining === 1 ? "" : "s"} to search MangaDex`
       : "";
-  const showDropdown = open && (options.length > 0 || Boolean(error || noMatch || hint));
+  const showDropdown =
+    open && (options.length > 0 || Boolean(error || noMatch || hint || guestPrompt));
   const optionId = (index) => `${listboxId}-option-${index}`;
 
   const runSearch = async (text) => {
@@ -242,7 +246,11 @@ function TitleSearch({ titles, onOpen, onPick }) {
       onMouseMove={() => index !== activeIndex && setActiveIndex(index)}
       sx={{
         minHeight: 56,
-        "&.Mui-selected, &.Mui-selected:hover": { bgcolor: "var(--panel-raised)" },
+        // Wash alone is ~1.1:1 on the panel; the inset ring makes the highlight unmistakable.
+        "&.Mui-selected, &.Mui-selected:hover": {
+          bgcolor: "var(--accent-soft)",
+          boxShadow: "inset 0 0 0 2px var(--accent)",
+        },
       }}
     >
       {option.title ? (
@@ -346,6 +354,16 @@ function TitleSearch({ titles, onOpen, onPick }) {
               overflowY: "auto",
             }}
           >
+            {guestPrompt && (
+              <Button
+                fullWidth
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => clerk.openSignIn()}
+                sx={{ justifyContent: "flex-start", px: 2, fontWeight: 600 }}
+              >
+                Sign in to search MangaDex and add titles
+              </Button>
+            )}
             {error && (
               <Alert severity="error" sx={{ m: 1 }}>
                 {error}

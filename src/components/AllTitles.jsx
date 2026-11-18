@@ -90,7 +90,7 @@ function AllTitles({ titles, signedIn, onOpen }) {
         spacing={2}
         sx={{ justifyContent: "space-between", alignItems: { md: "center" }, mb: 3 }}
       >
-        <Typography id="all-titles-heading" variant="h2">
+        <Typography id="all-titles-heading" variant="h3" component="h2">
           All titles
         </Typography>
 

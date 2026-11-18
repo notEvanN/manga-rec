@@ -66,14 +66,14 @@
   --on-accent: #ffffff;
   --accent-soft: rgb(47 102 216 / 0.1);
 
-  --status-reading: #137a52;
-  --status-reading-bg: rgb(19 122 82 / 0.1);
+  --status-reading: #0f6b47;
+  --status-reading-bg: rgb(15 107 71 / 0.1);
   --status-completed: #6a45d6;
   --status-completed-bg: rgb(106 69 214 / 0.1);
-  --status-dropped: #c23434;
-  --status-dropped-bg: rgb(194 52 52 / 0.1);
-  --status-plan: #2f66d8;
-  --status-plan-bg: rgb(47 102 216 / 0.1);
+  --status-dropped: #ad2a2a;
+  --status-dropped-bg: rgb(173 42 42 / 0.1);
+  --status-plan: #2858c0;
+  --status-plan-bg: rgb(40 88 192 / 0.1);
 
   /* Light tints stay dark enough for white placeholder text (≥4.5:1) */
   --tint-1: #4f70ab;

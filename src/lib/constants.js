@@ -17,4 +17,6 @@ export const STATUS_COLORS = {
   plan_to_read: ["var(--status-plan)", "var(--status-plan-bg)"],
 };
 
-export const SLOP_EXPLAINER = "Flagged by the group as not worth the time";
+// Slop is set once, by whoever adds the title; say who, never "the group".
+export const slopExplainer = (name) =>
+  name ? `Flagged by ${name} as not worth the time` : "Flagged as not worth the time";
