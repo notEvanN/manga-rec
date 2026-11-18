@@ -2,7 +2,7 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { readStatusValidator } from "./lib/validators";
 import { getCurrentUser, requireUser } from "./lib/auth";
-import { logActivity } from "./lib/activity";
+import { logActivity, retractActivity } from "./lib/activity";
 
 export const forTitle = query({
   args: { titleId: v.id("titles") },
@@ -49,5 +49,21 @@ export const setStatus = mutation({
       await ctx.db.insert("readStatus", { userId: user._id, titleId, status });
     }
     await logActivity(ctx, { userId: user._id, titleId, kind: "status", status });
+  },
+});
+
+// Remove the signed-in user's read status for a title.
+export const clear = mutation({
+  args: { titleId: v.id("titles") },
+  handler: async (ctx, { titleId }) => {
+    const user = await requireUser(ctx);
+    const existing = await ctx.db
+      .query("readStatus")
+      .withIndex("by_user_and_title", (q) => q.eq("userId", user._id).eq("titleId", titleId))
+      .unique();
+    if (!existing) return;
+
+    await ctx.db.delete(existing._id);
+    await retractActivity(ctx, user._id, titleId, "status");
   },
 });

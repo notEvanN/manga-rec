@@ -35,8 +35,9 @@ const pillSx = {
   borderRadius: "999px",
   border: "1px solid var(--border)",
   color: "text.primary",
-  fontSize: "0.9375rem",
+  fontSize: "0.875rem",
   fontWeight: 500,
+  minHeight: 44,
 };
 
 const toggleGroupSx = {

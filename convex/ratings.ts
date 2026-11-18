@@ -1,7 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { requireUser } from "./lib/auth";
-import { logActivity } from "./lib/activity";
+import { logActivity, retractActivity } from "./lib/activity";
 import { validateScore } from "./lib/validators";
 
 export const forTitle = query({
@@ -38,5 +38,21 @@ export const rate = mutation({
     if (existing?.score !== score) {
       await logActivity(ctx, { userId: user._id, titleId, kind: "rated", score });
     }
+  },
+});
+
+// Remove the signed-in user's rating for a title.
+export const clear = mutation({
+  args: { titleId: v.id("titles") },
+  handler: async (ctx, { titleId }) => {
+    const user = await requireUser(ctx);
+    const existing = await ctx.db
+      .query("ratings")
+      .withIndex("by_user_and_title", (q) => q.eq("userId", user._id).eq("titleId", titleId))
+      .unique();
+    if (!existing) return;
+
+    await ctx.db.delete(existing._id);
+    await retractActivity(ctx, user._id, titleId, "rated");
   },
 });

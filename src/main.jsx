@@ -6,6 +6,7 @@ import { ClerkProvider, useAuth } from "@clerk/clerk-react";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import App from "./App.jsx";
+import ToastProvider from "./components/ToastProvider";
 import { theme } from "./theme/theme";
 import "./index.css";
 
@@ -21,7 +22,9 @@ createRoot(document.getElementById("root")).render(
         afterSignOutUrl="/"
       >
         <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-          <App />
+          <ToastProvider>
+            <App />
+          </ToastProvider>
         </ConvexProviderWithClerk>
       </ClerkProvider>
     </ThemeProvider>

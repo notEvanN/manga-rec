@@ -1,5 +1,5 @@
 import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { internal } from "./_generated/api";
 import { requireUser } from "./lib/auth";
 import { logActivity } from "./lib/activity";
@@ -58,7 +58,11 @@ export const addWithMetadata = mutation({
       .withIndex("by_mangaDexId", (q) => q.eq("mangaDexId", titleArgs.mangaDexId))
       .first();
     if (duplicate) {
-      throw new Error(`"${duplicate.name}" already exists in the list.`);
+      // ConvexError keeps the message readable in production and lets the client offer "Open it".
+      throw new ConvexError({
+        message: `"${duplicate.name}" is already on the list.`,
+        titleId: duplicate._id,
+      });
     }
 
     const titleId = await ctx.db.insert("titles", { ...titleArgs, addedBy: user._id });

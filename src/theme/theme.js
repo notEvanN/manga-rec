@@ -43,14 +43,22 @@ export const theme = createTheme({
     button: { textTransform: "none", fontWeight: 600 },
   },
 
+  // Every tappable control is at least 44px tall: half the group uses MangaRec on a phone.
   components: {
-    MuiButton: { defaultProps: { disableElevation: true } },
+    MuiButton: {
+      defaultProps: { disableElevation: true },
+      styleOverrides: { root: { minHeight: 44 } },
+    },
     MuiCard: { defaultProps: { variant: "outlined" } },
     MuiChip: { defaultProps: { size: "small" } },
     MuiDialog: { defaultProps: { fullWidth: true, maxWidth: "sm" } },
+    MuiIconButton: { styleOverrides: { root: { padding: 10 } } },
     MuiPaper: { styleOverrides: { root: { backgroundImage: "none" } } },
     MuiTextField: { defaultProps: { size: "small" } },
-    MuiToggleButton: { defaultProps: { size: "small" } },
+    MuiToggleButton: {
+      defaultProps: { size: "small" },
+      styleOverrides: { root: { minHeight: 44, textTransform: "none" } },
+    },
   },
 });
 
