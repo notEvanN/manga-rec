@@ -20,7 +20,6 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { api } from "../../convex/_generated/api";
-import { SLOP_EXPLAINER } from "../lib/constants";
 import { friendlyError } from "../lib/errors";
 import { useToast } from "../lib/toast";
 import ScorePicker from "./ScorePicker";
@@ -153,7 +152,7 @@ function AddTitleDialog({ title, isSignedIn, onClose, onOpen }) {
                   color="textSecondary"
                   sx={{ display: "block" }}
                 >
-                  {SLOP_EXPLAINER}
+                  Flag it as not worth the time. Shown with your name.
                 </Typography>
               </span>
             }

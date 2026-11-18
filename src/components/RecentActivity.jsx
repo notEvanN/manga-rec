@@ -36,7 +36,15 @@ function ActivityItem({ item, now, onOpen }) {
       >
         <PersonAvatar name={item.userName} />
         <Box sx={{ minWidth: 0 }}>
-          <Typography sx={{ lineHeight: 1.4 }}>
+          <Typography
+            sx={{
+              lineHeight: 1.4,
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
             <Box component="span" sx={{ fontWeight: 600 }}>
               {item.userName}
             </Box>{" "}
@@ -96,9 +104,10 @@ function RecentActivity({ items, onOpen }) {
     <Box
       component="section"
       aria-labelledby="activity-heading"
-      sx={{ ...panelSx, p: { xs: 2, md: 3 }, pb: { xs: 1, md: 1.5 } }}
+      // Secondary to the hero and carousel: outline only, no fill.
+      sx={{ ...panelSx, bgcolor: "transparent", p: { xs: 2, md: 3 }, pb: { xs: 1, md: 1.5 } }}
     >
-      <Typography id="activity-heading" variant="h2" sx={{ mb: 1 }}>
+      <Typography id="activity-heading" variant="h3" component="h2" sx={{ mb: 1 }}>
         Recent activity
       </Typography>
 

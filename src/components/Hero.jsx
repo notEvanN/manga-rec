@@ -1,13 +1,12 @@
-import { Box, Button, Stack, Typography } from "@mui/material";
-import { useClerk, useUser } from "@clerk/clerk-react";
+import { Box, Typography } from "@mui/material";
+import { useUser } from "@clerk/clerk-react";
 import { panelSx } from "../theme/theme";
 import TitleSearch from "./TitleSearch";
 
 // Banner at the top of the home page: a prompt plus the list/MangaDex search.
-// Guests get a one-line explanation of MangaRec and a way in, since they can browse but not rate.
+// Guests get a one-line explanation of MangaRec; signing in lives in the sidebar.
 function Hero({ titles, onOpen, onPick }) {
   const { isLoaded, isSignedIn } = useUser();
-  const clerk = useClerk();
   const isGuest = isLoaded && !isSignedIn;
 
   return (
@@ -31,22 +30,6 @@ function Hero({ titles, onOpen, onPick }) {
           <Typography color="textSecondary" sx={{ mt: 0.5, fontSize: "1.0625rem" }}>
             See what your friends are reading and how each of them rated it.
           </Typography>
-        )}
-
-        {isGuest && (
-          <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
-            <Button variant="contained" onClick={() => clerk.openSignIn()}>
-              Sign in to rate
-            </Button>
-            <Button
-              variant="outlined"
-              color="inherit"
-              onClick={() => clerk.openSignUp()}
-              sx={{ borderColor: "divider" }}
-            >
-              Create account
-            </Button>
-          </Stack>
         )}
       </Box>
 

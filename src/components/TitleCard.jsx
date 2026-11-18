@@ -1,7 +1,7 @@
 import { Box, ButtonBase, Stack, Typography } from "@mui/material";
 import StarIcon from "@mui/icons-material/Star";
 import { hoverLift } from "../theme/theme";
-import { SLOP_EXPLAINER } from "../lib/constants";
+import { slopExplainer } from "../lib/constants";
 import CoverPlaceholder from "./CoverPlaceholder";
 
 const badgeSx = {
@@ -45,7 +45,7 @@ function Cover({ title, rank }) {
       )}
       {title.slop && (
         <Box
-          title={SLOP_EXPLAINER}
+          title={slopExplainer()}
           sx={{ ...badgeSx, right: 10, bgcolor: "error.main", color: "error.contrastText" }}
         >
           Slop

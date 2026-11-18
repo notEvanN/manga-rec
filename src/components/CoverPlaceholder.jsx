@@ -27,7 +27,7 @@ function CoverPlaceholder({ name, showName = true }) {
         fontFamily: "h3.fontFamily",
         fontWeight: 700,
         fontSize: "1.0625rem",
-        lineHeight: 1.25,
+        lineHeight: 1.3,
         overflowWrap: "anywhere",
       }}
     >

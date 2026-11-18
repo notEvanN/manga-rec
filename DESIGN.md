@@ -41,10 +41,10 @@ colors:
   shelf-tag-blue-light: "#2f66d8"
   on-shelf-tag-light: "#ffffff"
   shelf-tag-wash-light: "rgb(47 102 216 / 0.1)"
-  status-reading-light: "#137a52"
+  status-reading-light: "#0f6b47"
   status-completed-light: "#6a45d6"
-  status-dropped-light: "#c23434"
-  status-plan-light: "#2f66d8"
+  status-dropped-light: "#ad2a2a"
+  status-plan-light: "#2858c0"
   tint-1-light: "#4f70ab"
   tint-2-light: "#7462a8"
   tint-3-light: "#367a85"
@@ -380,6 +380,9 @@ multiplied by the theme's 10px base.
 Soft and friendly: rounded, sentence-case and flat.
 
 - **Shape:** gently rounded corners (10px).
+- **Focus:** every button-like control (anything built on MUI ButtonBase) shows a 2px Shelf-Tag Blue
+  outline, offset 2px, on keyboard focus. It is set once in the theme. The highlighted search result
+  uses Shelf-Tag Wash with a 2px inset Shelf-Tag Blue ring.
 - **Size:** every button, icon button and toggle button is at least 44px tall, set in the theme.
   Don't override it smaller.
 - **Primary:** Shelf-Tag Blue fill with On Shelf-Tag text at weight 600 and no elevation. The large
@@ -418,6 +421,9 @@ A cover on the shelf.
 - **Background:** Panel Charcoal with a 1px Hairline border and no shadow.
 - **Padding:** 16px on phones, 24px from `md` (32px in the hero).
 - Each panel is a `section` labelled by its Headline.
+- **Hierarchy:** the hero and carousel lead, with a Panel Charcoal fill and Headline-size headings.
+  The activity sidebar is outline-only (no fill), and it and All titles use Title-size headings
+  (still `h2` elements), so the page has one focal point.
 
 ### Inputs / Fields
 

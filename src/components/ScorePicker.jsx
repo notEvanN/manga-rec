@@ -68,7 +68,7 @@ function ScorePicker({ label, value, onChange, disabled }) {
             fontSize: "1rem",
             fontWeight: 600,
             fontVariantNumeric: "tabular-nums",
-            color: "text.primary",
+            "&:not(.Mui-disabled)": { color: "text.primary" }, // let MUI grey out disabled
             transition: "background-color 120ms ease-out, border-color 120ms ease-out",
             "&:hover": { bgcolor: "var(--panel-raised)" },
             "&.Mui-selected, &.Mui-selected:hover": {

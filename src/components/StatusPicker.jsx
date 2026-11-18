@@ -30,7 +30,7 @@ function StatusPicker({ label, value, onChange, disabled }) {
             },
             fontSize: "0.875rem",
             fontWeight: 600,
-            color: "text.primary",
+            "&:not(.Mui-disabled)": { color: "text.primary" }, // let MUI grey out disabled
             whiteSpace: "nowrap",
             transition: "background-color 120ms ease-out, border-color 120ms ease-out",
             "&:hover": { bgcolor: "var(--panel-raised)" },
